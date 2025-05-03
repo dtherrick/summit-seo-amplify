@@ -1,0 +1,43 @@
+graph TD
+    User[End User] -- HTTPS --> AmplifyHosting[Amplify Hosting React Frontend]
+    Admin[SaaS Admin] -- HTTPS --> AmplifyHosting
+
+    AmplifyHosting -- API Calls --> APIGateway[API Gateway]
+    AmplifyHosting -- Auth --> Cognito[Amazon Cognito]
+
+    APIGateway -- Triggers --> LambdaAPI[Lambda Python/FastAPI Backend]
+    LambdaAPI -- CRUD Ops --> DynamoDB[DynamoDB]
+    LambdaAPI -- Auth Check --> Cognito
+    LambdaAPI -- Admin Ops --> DynamoDB
+    LambdaAPI -- Send Task --> SQS[SQS Queue AI Tasks]
+    LambdaAPI -- Invoke --> Bedrock[Bedrock Quick AI Ops]
+    LambdaAPI -- Read/Write --> OpenSearch[OpenSearch Serverless Vector DB]
+
+    SQS -- Triggers --> StepFunctions[Step Functions AI Workflow]
+    StepFunctions -- Triggers --> FargateTask[Fargate Task Web Crawling - Playwright]
+    StepFunctions -- Invokes --> LambdaWorker[Lambda Analysis Logic]
+    StepFunctions -- Invokes --> Bedrock
+    StepFunctions -- Read/Write --> OpenSearch
+    StepFunctions -- Write Results --> DynamoDB
+    StepFunctions -- Notify --> SES[Amazon SES Optional Email]
+    StepFunctions -- Update Status --> DynamoDB
+
+    FargateTask -- Crawls --> ExternalWebsites[User/Competitor Websites]
+
+    CloudWatch[CloudWatch Logs, Metrics]
+    XRay[X-Ray Tracing]
+    CDK[AWS CDK] -- Deploys --> AWS_Infra[All AWS Resources]
+    CodePipeline[CodePipeline/CodeBuild] -- Builds & Deploys --> AmplifyHosting
+    CodePipeline -- Builds & Deploys --> LambdaAPI
+    CodePipeline -- Builds & Deploys --> FargateTask
+
+    LambdaAPI --> CloudWatch
+    StepFunctions --> CloudWatch
+    FargateTask --> CloudWatch
+    APIGateway --> CloudWatch
+    LambdaAPI --> XRay
+    APIGateway --> XRay
+    StepFunctions --> XRay
+
+    LambdaAPI -- Send Email --> SES[Amazon SES Password Reset etc]
+    Cognito -- Triggers --> SES[via Lambda Trigger]
