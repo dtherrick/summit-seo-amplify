@@ -1,0 +1,143 @@
+{
+    "PoolName": "SummitSEOAmplifyUserPool",
+    "Policies": {
+        "PasswordPolicy": {
+            "MinimumLength": 8,
+            "RequireUppercase": true,
+            "RequireLowercase": true,
+            "RequireNumbers": true,
+            "RequireSymbols": true,
+            "TemporaryPasswordValidityDays": 7
+        }
+    },
+    "AutoVerifiedAttributes": [
+        "email"
+    ],
+    "UsernameAttributes": [
+        "email"
+    ],
+    "MfaConfiguration": "OFF",
+    "EmailConfiguration": {
+        "EmailSendingAccount": "COGNITO_DEFAULT"
+    },
+    "AdminCreateUserConfig": {
+        "AllowAdminCreateUserOnly": false,
+        "InviteMessageTemplate": {
+            "EmailMessage": "Your username is {username} and temporary password is {####}. Please login and change your password.",
+            "EmailSubject": "Your temporary password for Summit SEO Amplify"
+        }
+    },
+    "Schema": [
+        {
+            "Name": "email",
+            "AttributeDataType": "String",
+            "DeveloperOnlyAttribute": false,
+            "Mutable": true,
+            "Required": true,
+            "StringAttributeConstraints": {
+                "MinLength": "0",
+                "MaxLength": "2048"
+            }
+        },
+        {
+            "Name": "given_name",
+            "AttributeDataType": "String",
+            "DeveloperOnlyAttribute": false,
+            "Mutable": true,
+            "Required": false,
+            "StringAttributeConstraints": {
+                "MinLength": "0",
+                "MaxLength": "2048"
+            }
+        },
+        {
+            "Name": "family_name",
+            "AttributeDataType": "String",
+            "DeveloperOnlyAttribute": false,
+            "Mutable": true,
+            "Required": false,
+            "StringAttributeConstraints": {
+                "MinLength": "0",
+                "MaxLength": "2048"
+            }
+        },
+        {
+            "Name": "tenant_id",
+            "AttributeDataType": "String",
+            "DeveloperOnlyAttribute": false,
+            "Mutable": true,
+            "Required": false,
+            "StringAttributeConstraints": {
+                "MinLength": "0",
+                "MaxLength": "2048"
+            }
+        },
+        {
+            "Name": "subscription_tier",
+            "AttributeDataType": "String",
+            "DeveloperOnlyAttribute": false,
+            "Mutable": true,
+            "Required": false,
+            "StringAttributeConstraints": {
+                "MinLength": "0",
+                "MaxLength": "2048"
+            }
+        },
+        {
+            "Name": "business_name",
+            "AttributeDataType": "String",
+            "DeveloperOnlyAttribute": false,
+            "Mutable": true,
+            "Required": false,
+            "StringAttributeConstraints": {
+                "MinLength": "0",
+                "MaxLength": "2048"
+            }
+        },
+        {
+            "Name": "business_website",
+            "AttributeDataType": "String",
+            "DeveloperOnlyAttribute": false,
+            "Mutable": true,
+            "Required": false,
+            "StringAttributeConstraints": {
+                "MinLength": "0",
+                "MaxLength": "2048"
+            }
+        },
+        {
+            "Name": "business_industry",
+            "AttributeDataType": "String",
+            "DeveloperOnlyAttribute": false,
+            "Mutable": true,
+            "Required": false,
+            "StringAttributeConstraints": {
+                "MinLength": "0",
+                "MaxLength": "2048"
+            }
+        },
+        {
+            "Name": "user_type",
+            "AttributeDataType": "String",
+            "DeveloperOnlyAttribute": false,
+            "Mutable": true,
+            "Required": false,
+            "StringAttributeConstraints": {
+                "MinLength": "0",
+                "MaxLength": "2048"
+            }
+        }
+    ],
+    "UserPoolTags": {
+        "Environment": "development",
+        "Project": "SummitSEOAmplify"
+    },
+    "AccountRecoverySetting": {
+        "RecoveryMechanisms": [
+            {
+                "Priority": 1,
+                "Name": "verified_email"
+            }
+        ]
+    }
+}

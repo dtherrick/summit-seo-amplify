@@ -1,0 +1,64 @@
+{
+    "UserPoolId": "us-east-1_amWoKMkcF",
+    "ClientName": "SummitSEOAmplifyWebClient",
+    "GenerateSecret": false,
+    "RefreshTokenValidity": 30,
+    "AccessTokenValidity": 1,
+    "IdTokenValidity": 1,
+    "TokenValidityUnits": {
+        "AccessToken": "hours",
+        "IdToken": "hours",
+        "RefreshToken": "days"
+    },
+    "ReadAttributes": [
+        "email",
+        "email_verified",
+        "family_name",
+        "given_name",
+        "custom:tenant_id",
+        "custom:subscription_tier",
+        "custom:business_name",
+        "custom:business_website",
+        "custom:business_industry",
+        "custom:user_type"
+    ],
+    "WriteAttributes": [
+        "email",
+        "family_name",
+        "given_name",
+        "custom:tenant_id",
+        "custom:subscription_tier",
+        "custom:business_name",
+        "custom:business_website",
+        "custom:business_industry",
+        "custom:user_type"
+    ],
+    "ExplicitAuthFlows": [
+        "ALLOW_USER_SRP_AUTH",
+        "ALLOW_REFRESH_TOKEN_AUTH",
+        "ALLOW_USER_PASSWORD_AUTH"
+    ],
+    "PreventUserExistenceErrors": "ENABLED",
+    "EnableTokenRevocation": true,
+    "AllowedOAuthFlows": [
+        "code",
+        "implicit"
+    ],
+    "AllowedOAuthScopes": [
+        "email",
+        "openid",
+        "profile"
+    ],
+    "AllowedOAuthFlowsUserPoolClient": true,
+    "CallbackURLs": [
+        "http://localhost:5173/",
+        "https://summit-seo-amplify.example.com/"
+    ],
+    "LogoutURLs": [
+        "http://localhost:5173/",
+        "https://summit-seo-amplify.example.com/"
+    ],
+    "SupportedIdentityProviders": [
+        "COGNITO"
+    ]
+}
