@@ -1,0 +1,6 @@
+[tool.ruff]
+# Add other global Ruff settings here if needed in the future
+
+[tool.ruff.lint]
+# Ignores F401 (unused import)
+ignore = ["F401"]
