@@ -2,6 +2,7 @@
 
 Backend API for the Summit SEO Amplify platform built with FastAPI and AWS services.
 
+## Architecture (so we can see if actions work)
 ## Technology Stack
 
 - **Framework**: FastAPI
