@@ -9,7 +9,7 @@ on:
     paths: # Trigger only if backend or CDK code changes
       - 'backend/**'
       - 'infrastructure/**'
-      - '.github/workflows/backend-cicd.yml'
+      - '.github/workflows/backend-cicd.yaml'
   pull_request:
     branches:
       - main # Or your primary development branch
@@ -17,7 +17,7 @@ on:
     paths:
       - 'backend/**'
       - 'infrastructure/**'
-      - '.github/workflows/backend-cicd.yml'
+      - '.github/workflows/backend-cicd.yaml'
 
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
