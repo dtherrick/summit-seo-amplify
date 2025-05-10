@@ -53,7 +53,7 @@ jobs:
         run: |
           echo "$HOME/.cargo/bin" >> $GITHUB_PATH
           uv venv # Create virtual environment in .venv
-          uv pip install -r requirements.lock --locked --system-site-packages
+          uv pip install -r requirements.lock -- --locked --system-site-packages
 
       - name: Lint with Ruff
         run: |
