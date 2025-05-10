@@ -5,6 +5,7 @@ on:
     branches:
       - main # Or your primary development branch for deployments
       - develop # Or any other branch you want to run tests/linting on
+      - aws-setup
     paths: # Trigger only if backend or CDK code changes
       - 'backend/**'
       - 'infrastructure/**'

@@ -20,14 +20,13 @@
 - [x] Initialize React/Vite frontend project with Amplify libraries
 - [x] Initialize Python/FastAPI backend project with uv package manager
 - [x] Configure Cognito User Pool with required attributes
-- [ ] Define core DynamoDB tables (Users, Tenants) using CDK or Amplify
+- [x] Define core DynamoDB tables (Users, Tenants) using CDK or Amplify
 - [ ] Set up basic GitHub Actions CI/CD pipeline
 
 ## Next Steps
 
 ### Complete Day 2 Tasks
 
-- Define core DynamoDB tables (Users, Tenants) using CDK or Amplify
 - Set up basic GitHub Actions CI/CD pipeline
 
 ### Day 3: Authentication Implementation
@@ -65,11 +64,16 @@
   - Configured environment variables for backend integration
   
 - Next tasks:
-  - Define and create DynamoDB tables for Users and Tenants
   - Set up GitHub Actions for CI/CD
   - Implement frontend authentication components
   - Connect frontend to backend API
-  
+
+### DynamoDB Table Creation (New Section)
+- Successfully defined and deployed core DynamoDB tables (Users, Tenants) using AWS CDK.
+  - Users table (`SummitSEOAmplify-Users`) includes a GSI on `cognito_id`.
+  - Tenants table (`SummitSEOAmplify-Tenants`) includes a GSI on `owner_id`.
+  - Both tables are configured with on-demand billing.
+
 ### Roadblocks
 
 - None at the moment
