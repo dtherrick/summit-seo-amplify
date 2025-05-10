@@ -57,13 +57,15 @@ jobs:
 
       - name: Lint with Ruff
         run: |
-          source .venv/bin/activate # Activate venv
-          ruff check . # Add any specific ruff flags you use
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH # Ensure uv is in PATH
+          uv run ruff check .
+        working-directory: ./backend # Make sure working directory is correct
 
       - name: Test with pytest
         run: |
-          source .venv/bin/activate # Activate venv
-          pytest # Add any specific pytest flags or paths you use
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH # Ensure uv is in PATH
+          uv run pytest
+        working-directory: ./backend
 
   deploy-cdk:
     name: Deploy CDK Stack
