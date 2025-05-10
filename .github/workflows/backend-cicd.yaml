@@ -1,0 +1,108 @@
+name: Backend CI/CD
+
+on:
+  push:
+    branches:
+      - main # Or your primary development branch for deployments
+      - develop # Or any other branch you want to run tests/linting on
+    paths: # Trigger only if backend or CDK code changes
+      - 'backend/**'
+      - 'infrastructure/**'
+      - '.github/workflows/backend-cicd.yml'
+  pull_request:
+    branches:
+      - main # Or your primary development branch
+      - develop
+    paths:
+      - 'backend/**'
+      - 'infrastructure/**'
+      - '.github/workflows/backend-cicd.yml'
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  CDK_STACK_NAME: ${{ secrets.CDK_STACK_NAME }}
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '18'
+
+permissions: # Needed for OIDC
+  id-token: write
+  contents: read
+
+jobs:
+  test-and-lint-backend:
+    name: Test and Lint Backend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv package manager
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+
+      - name: Install backend dependencies with uv
+        run: |
+          $HOME/.cargo/bin/uv venv # Create virtual environment in .venv
+          $HOME/.cargo/bin/uv pip install -r requirements.lock --locked --system-site-packages
+
+      - name: Lint with Ruff
+        run: |
+          source .venv/bin/activate # Activate venv
+          ruff check . # Add any specific ruff flags you use
+
+      - name: Test with pytest
+        run: |
+          source .venv/bin/activate # Activate venv
+          pytest # Add any specific pytest flags or paths you use
+
+  deploy-cdk:
+    name: Deploy CDK Stack
+    needs: test-and-lint-backend # Run only if tests and linting pass
+    # Deploy only on push to your main deployment branch (e.g., 'main')
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./infrastructure # Corrected path to CDK directory
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_IAM_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install CDK project dependencies
+        run: npm ci # Assumes package-lock.json in infrastructure/
+
+      - name: CDK Bootstrap (if needed)
+        run: npx aws-cdk bootstrap aws://${{ secrets.AWS_ACCOUNT_ID }}/${{ env.AWS_REGION }}
+        continue-on-error: true # Bootstrap might fail if already done, that's okay
+
+      - name: CDK Synth
+        run: npx aws-cdk synth ${{ env.CDK_STACK_NAME }}
+
+      - name: CDK Deploy
+        run: npx aws-cdk deploy ${{ env.CDK_STACK_NAME }} --require-approval never --outputs-file cdk-outputs.json
+
+      - name: Upload CDK Outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: cdk-outputs
+          path: ./infrastructure/cdk-outputs.json # Path within the infrastructure directory
