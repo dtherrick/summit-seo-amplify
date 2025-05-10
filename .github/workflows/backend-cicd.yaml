@@ -46,26 +46,27 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Install uv package manager
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
-
-      - name: Install backend dependencies with uv
+      - name: Install uv package manager and add to PATH
         run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
           echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-          uv venv # Create virtual environment in .venv
-          uv pip sync requirements.lock
+        working-directory: ${{ github.workspace }}
+
+      - name: Setup backend virtual environment and install dependencies
+        run: |
+          uv venv  # Creates .venv in CWD (./backend)
+          source .venv/bin/activate # Activates ./backend/.venv
+          uv pip sync requirements.lock # Syncs ./backend/requirements.lock into active venv
 
       - name: Lint with Ruff
         run: |
-          echo "$HOME/.cargo/bin" >> $GITHUB_PATH # Ensure uv is in PATH
-          uv run ruff check .
-        working-directory: ./backend # Make sure working directory is correct
+          source .venv/bin/activate # Activate the correct venv
+          ruff check . # ruff is found from the venv
 
       - name: Test with pytest
         run: |
-          echo "$HOME/.cargo/bin" >> $GITHUB_PATH # Ensure uv is in PATH
-          uv run pytest
-        working-directory: ./backend
+          source .venv/bin/activate # Activate the correct venv
+          pytest # pytest is found from the venv
 
   deploy-cdk:
     name: Deploy CDK Stack
