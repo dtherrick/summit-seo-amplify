@@ -51,8 +51,9 @@ jobs:
 
       - name: Install backend dependencies with uv
         run: |
-          $HOME/.cargo/bin/uv venv # Create virtual environment in .venv
-          $HOME/.cargo/bin/uv pip install -r requirements.lock --locked --system-site-packages
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+          uv venv # Create virtual environment in .venv
+          uv pip install -r requirements.lock --locked --system-site-packages
 
       - name: Lint with Ruff
         run: |
