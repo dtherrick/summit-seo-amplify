@@ -22,8 +22,8 @@ on:
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
   CDK_STACK_NAME: ${{ secrets.CDK_STACK_NAME }}
-  PYTHON_VERSION: '3.11'
-  NODE_VERSION: '18'
+  PYTHON_VERSION: '3.13'
+  NODE_VERSION: '20.x'
 
 permissions: # Needed for OIDC
   id-token: write
