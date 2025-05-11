@@ -30,6 +30,7 @@
 - [x] Implement password reset functionality
 - [x] Create protected route structure in frontend
 - [x] Test authentication flows end-to-end
+- [x] Implement Cognito post-confirmation trigger for user data persistence
 
 ## Next Steps
 
