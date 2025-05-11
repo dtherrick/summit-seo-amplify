@@ -3,7 +3,7 @@ description:
 globs:
 alwaysApply: true
 ---
-@file ../tasks/tasks.md
+@file ../docs/tasks.md
 @file ../docs/progress.md
 @file ../docs/tech-stack.md
 @file ../docs/architecture.mermaid
@@ -14,14 +14,14 @@ alwaysApply: true
 
 **Required Files:**
 
-*   `tasks/tasks.md`: Source of task definitions
+*   `docs/tasks.md`: Source of task definitions
 *   `docs/progress.md`: Progress tracking
 *   `docs/tech-stack.md`: Implementation guidelines
 *   `docs/architecture.mermaid`: Architecture reference for validation
 
 **Workflow Steps:**
 
-1.  **Read Task:** READ `tasks/tasks.md`:
+1.  **Read Task:** READ `docs/tasks.md`:
     *   Parse current task requirements.
     *   Extract acceptance criteria.
     *   Identify dependencies.

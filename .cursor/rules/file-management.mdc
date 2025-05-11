@@ -6,7 +6,7 @@ alwaysApply: true
 @file ../docs/architecture.mermaid
 @file ../docs/progress.md
 @file ../docs/tech-stack.md
-@file ../tasks/tasks.md
+@file ../docs/tasks.md
 
 # File Management Rules
 
@@ -20,4 +20,4 @@ Required actions after any code changes:
     *   Any new issues encountered
     *   Completed items
 3.  **Validate Specs:** VALIDATE changes against `docs/tech-stack.md` specifications.
-4.  **Verify Task:** VERIFY task progress against `tasks/tasks.md`.
+4.  **Verify Task:** VERIFY task progress against `docs/tasks.md`.

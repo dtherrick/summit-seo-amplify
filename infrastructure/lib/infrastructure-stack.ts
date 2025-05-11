@@ -159,7 +159,7 @@ export class InfrastructureStack extends cdk.Stack {
 
     // Define routes for /users/me
     httpApi.addRoutes({
-      path: '/users/me',
+      path: '/api/v1/users/me',
       methods: [apigwv2.HttpMethod.GET, apigwv2.HttpMethod.PUT],
       integration: apiLambdaIntegration,
       // Authorizer is already set at the API level, so it applies here too.
