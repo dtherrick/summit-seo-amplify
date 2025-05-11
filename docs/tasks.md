@@ -23,27 +23,27 @@ The project foundation has already been established with:
 
 ### Day 2: Core Infrastructure Setup (Next Steps)
 
-- [ ] Configure Cognito User Pool with required attributes
-- [ ] Define core DynamoDB tables (Users, Tenants) using CDK or Amplify
-- [ ] Set up basic GitHub Actions CI/CD pipeline (if not already configured with Amplify)
-- [ ] Initialize React/Vite frontend project with Amplify libraries
-- [ ] Initialize Python/FastAPI backend project
+- [x] Configure Cognito User Pool with required attributes
+- [x] Define core DynamoDB tables (Users, Tenants) using CDK or Amplify
+- [x] Set up basic GitHub Actions CI/CD pipeline (if not already configured with Amplify)
+- [x] Initialize React/Vite frontend project with Amplify libraries
+- [x] Initialize Python/FastAPI backend project
 
 **Milestone:** Basic infrastructure defined, core projects initialized
 
 ### Day 3: Authentication Implementation
 
-- [ ] Implement frontend sign-up page/component
-- [ ] Implement frontend sign-in/sign-out flow
-- [ ] Implement password reset functionality
-- [ ] Create protected route structure in frontend
-- [ ] Test authentication flows end-to-end
+- [x] Implement frontend sign-up page/component
+- [x] Implement frontend sign-in/sign-out flow
+- [x] Implement password reset functionality
+- [x] Create protected route structure in frontend
+- [x] Test authentication flows end-to-end
 
 **Milestone:** Working authentication system with signup, login, and password reset
 
 ### Day 4: User Profile & Backend Integration
 
-- [ ] Implement backend user profile creation (Cognito trigger)
+- [x] Implement backend user profile creation (Cognito trigger)
 - [ ] Set up API Gateway and basic Lambda integration
 - [ ] Create DynamoDB access patterns for user/tenant data
 - [ ] Implement secure API endpoints for user profiles
