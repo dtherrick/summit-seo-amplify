@@ -44,7 +44,7 @@ The project foundation has already been established with:
 ### Day 4: User Profile & Backend Integration
 
 - [x] Implement backend user profile creation (Cognito trigger)
-- [ ] Set up API Gateway and basic Lambda integration
+- [x] Set up API Gateway and basic Lambda integration
 - [ ] Create DynamoDB access patterns for user/tenant data
 - [ ] Implement secure API endpoints for user profiles
 - [ ] Connect frontend to backend user profile APIs

@@ -34,7 +34,12 @@
 
 ## Next Steps
 
-### Day 4: User Profile & Backend Integration
+### Day 4: User Profile & Backend Integration ✅
+- [x] Implement backend user profile creation (Cognito trigger)
+- [x] Set up API Gateway and basic Lambda integration (including resolving public `/` and `/health` endpoint issues)
+- [ ] Create DynamoDB access patterns for user/tenant data
+- [ ] Implement secure API endpoints for user profiles
+- [ ] Connect frontend to backend user profile APIs
 
 ## Notes
 

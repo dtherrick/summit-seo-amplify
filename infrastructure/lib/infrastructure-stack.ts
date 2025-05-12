@@ -5,9 +5,9 @@ import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as cognito from 'aws-cdk-lib/aws-cognito';
 import * as path from 'path';
-import * as apigwv2 from 'aws-cdk-lib/aws-apigatewayv2';
-import { HttpLambdaIntegration } from 'aws-cdk-lib/aws-apigatewayv2-integrations';
+import { HttpApi, CorsHttpMethod, HttpNoneAuthorizer, HttpMethod } from 'aws-cdk-lib/aws-apigatewayv2';
 import { HttpUserPoolAuthorizer } from 'aws-cdk-lib/aws-apigatewayv2-authorizers';
+import { HttpLambdaIntegration } from 'aws-cdk-lib/aws-apigatewayv2-integrations';
 // import * as sqs from 'aws-cdk-lib/aws-sqs';
 
 export class InfrastructureStack extends cdk.Stack {
@@ -98,9 +98,19 @@ export class InfrastructureStack extends cdk.Stack {
 
     // Define the API Lambda function (FastAPI backend)
     const apiLambda = new lambda.Function(this, 'ApiLambda', {
-      runtime: lambda.Runtime.PYTHON_3_9, // Or your preferred Python version
-      handler: 'main.handler', // Assuming Mangum adapter in main.py
-      code: lambda.Code.fromAsset(path.join(__dirname, '../../backend')), // Path to your FastAPI app
+      runtime: lambda.Runtime.PYTHON_3_12, // Or your preferred Python version
+      handler: 'app.main.handler', // Corrected handler path
+      code: lambda.Code.fromAsset(path.join(__dirname, '../../backend'), { // Asset path
+        bundling: {
+          image: lambda.Runtime.PYTHON_3_12.bundlingImage, // Use stock Python bundling image
+          command: [
+            'bash', '-c', [
+              'pip install -r requirements.txt -t /asset-output', // Install to staging dir
+              'cp -au . /asset-output' // Copy the rest of the code
+            ].join(' && ')
+          ],
+        },
+      }),
       role: apiLambdaRole,
       environment: {
         USERS_TABLE_NAME: usersTable.tableName,
@@ -110,43 +120,34 @@ export class InfrastructureStack extends cdk.Stack {
       timeout: cdk.Duration.seconds(30),
     });
 
-    // Import existing Cognito User Pool (if not already defined above)
-    // const userPoolId = 'us-east-1_amWoKMkcF'; // Ensure this is the correct ID
-    // const userPool = cognito.UserPool.fromUserPoolId(this, 'ImportedUserPoolForApi', userPoolId);
+    // 1. Get your frontend's App Client ID (the one that generates the JWTs you're sending)
+    const frontendAppClientId = '4s0peq2cv7vuuvq00frkrt13hb';
 
-    // Define Cognito Authorizer for API Gateway
+    // 2. Import this existing User Pool Client into your CDK app
+    const importedUserPoolClient = cognito.UserPoolClient.fromUserPoolClientId(
+        this,
+        'ImportedFrontendClient', // Logical ID for this imported client in CDK
+        frontendAppClientId
+    );
+
+    // Define Cognito Authorizer for API Gateway, now using the imported client
     const authorizer = new HttpUserPoolAuthorizer('CognitoAuthorizer', userPool, {
-      userPoolClients: [userPool.addClient('apiClient', {
-        // Configure client as needed, e.g., OAuth flows if you plan to use them directly with API GW
-        // For just token validation, defaults are often fine.
-         authFlows: {
-          userSrp: true,
-        },
-        oAuth: {
-          flows: {
-            authorizationCodeGrant: true,
-            implicitCodeGrant: true, // Example: if you need id_token directly for some flows
-          },
-          scopes: [ cognito.OAuthScope.EMAIL, cognito.OAuthScope.OPENID, cognito.OAuthScope.PROFILE ],
-          // callbackUrls: ['https://myapp.com/callback'], // Replace with your actual callback URLs
-          // logoutUrls: ['https://myapp.com/logout'],    // Replace with your actual logout URLs
-        },
-      })],
+      userPoolClients: [importedUserPoolClient], // Use the imported client object
     });
 
     // Define the HTTP API Gateway
-    const httpApi = new apigwv2.HttpApi(this, 'SummitSEOAmplifyHttpApi', {
+    const httpApi = new HttpApi(this, 'SummitSEOAmplifyHttpApi', {
       apiName: 'SummitSEOAmplifyApi',
       description: 'API for Summit SEO Amplify',
       corsPreflight: {
         allowHeaders: ['Content-Type', 'X-Amz-Date', 'Authorization', 'X-Api-Key', 'X-Amz-Security-Token'],
         allowMethods: [
-          apigwv2.CorsHttpMethod.OPTIONS,
-          apigwv2.CorsHttpMethod.GET,
-          apigwv2.CorsHttpMethod.POST,
-          apigwv2.CorsHttpMethod.PUT,
-          apigwv2.CorsHttpMethod.PATCH,
-          apigwv2.CorsHttpMethod.DELETE,
+          CorsHttpMethod.OPTIONS,
+          CorsHttpMethod.GET,
+          CorsHttpMethod.POST,
+          CorsHttpMethod.PUT,
+          CorsHttpMethod.PATCH,
+          CorsHttpMethod.DELETE,
         ],
         allowCredentials: true,
         allowOrigins: ['http://localhost:3000', 'https://main.youramplifyapp.com'], // Replace with your frontend URLs
@@ -160,9 +161,25 @@ export class InfrastructureStack extends cdk.Stack {
     // Define routes for /users/me
     httpApi.addRoutes({
       path: '/api/v1/users/me',
-      methods: [apigwv2.HttpMethod.GET, apigwv2.HttpMethod.PUT],
+      methods: [HttpMethod.GET, HttpMethod.PUT],
       integration: apiLambdaIntegration,
       // Authorizer is already set at the API level, so it applies here too.
+    });
+
+    // Add public route for /
+    httpApi.addRoutes({
+      path: '/',
+      methods: [HttpMethod.GET],
+      integration: apiLambdaIntegration,
+      authorizer: new HttpNoneAuthorizer(), // Make this route public
+    });
+
+    // Add public route for /health
+    httpApi.addRoutes({
+      path: '/health',
+      methods: [HttpMethod.GET],
+      integration: apiLambdaIntegration,
+      authorizer: new HttpNoneAuthorizer(), // Make this route public
     });
 
     // --- End of API Lambda and API Gateway Resources ---
