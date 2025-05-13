@@ -21,7 +21,7 @@ backend/app/tests/api/endpoints/test_users.py::test_update_users_me_dynamodb_err
 =================================== FAILURES ===================================
 __________________________ test_read_users_me_success __________________________
 
-mock_get_user = <AsyncMock name='get_user_by_cognito_id' id='139782176927968'>
+mock_get_user = <AsyncMock name='get_user_by_cognito_id' id='139925511074016'>
 override_get_current_user = None
 
     @patch("backend.app.db.dynamodb.get_user_by_cognito_id", new_callable=AsyncMock)
@@ -29,7 +29,7 @@ override_get_current_user = None
         mock_get_user.return_value = MOCK_USER
 >       response = client.get("/api/v1/users/me")
 
-backend/app/tests/api/endpoints/test_users.py:36: 
+backend/app/tests/api/endpoints/test_users.py:41: 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 backend/.venv/lib/python3.13/site-packages/starlette/testclient.py:465: in get
     return super().get(
@@ -89,56 +89,59 @@ backend/.venv/lib/python3.13/site-packages/starlette/_exception_handler.py:42: i
     await app(scope, receive, sender)
 backend/.venv/lib/python3.13/site-packages/starlette/routing.py:73: in app
     response = await f(request)
-backend/.venv/lib/python3.13/site-packages/fastapi/routing.py:301: in app
-    raw_response = await run_endpoint_function(
-backend/.venv/lib/python3.13/site-packages/fastapi/routing.py:212: in run_endpoint_function
-    return await dependant.call(**values)
-backend/app/api/endpoints/users.py:16: in read_users_me
-    user = await get_user_by_cognito_id(current_user["cognito_id"])
-backend/app/db/dynamodb.py:38: in get_user_by_cognito_id
-    response = users_table.query(
-backend/.venv/lib/python3.13/site-packages/boto3/resources/factory.py:581: in do_action
-    response = action(self, *args, **kwargs)
-backend/.venv/lib/python3.13/site-packages/boto3/resources/action.py:88: in __call__
-    response = getattr(parent.meta.client, operation_name)(*args, **params)
-backend/.venv/lib/python3.13/site-packages/botocore/client.py:570: in _api_call
-    return self._make_api_call(operation_name, kwargs)
-backend/.venv/lib/python3.13/site-packages/botocore/context.py:123: in wrapper
-    return func(*args, **kwargs)
-backend/.venv/lib/python3.13/site-packages/botocore/client.py:1013: in _make_api_call
-    http, parsed_response = self._make_request(
-backend/.venv/lib/python3.13/site-packages/botocore/client.py:1037: in _make_request
-    return self._endpoint.make_request(operation_model, request_dict)
-backend/.venv/lib/python3.13/site-packages/botocore/endpoint.py:119: in make_request
-    return self._send_request(request_dict, operation_model)
-backend/.venv/lib/python3.13/site-packages/botocore/endpoint.py:196: in _send_request
-    request = self.create_request(request_dict, operation_model)
-backend/.venv/lib/python3.13/site-packages/botocore/endpoint.py:132: in create_request
-    self._event_emitter.emit(
-backend/.venv/lib/python3.13/site-packages/botocore/hooks.py:412: in emit
-    return self._emitter.emit(aliased_event_name, **kwargs)
-backend/.venv/lib/python3.13/site-packages/botocore/hooks.py:256: in emit
-    return self._emit(event_name, kwargs)
-backend/.venv/lib/python3.13/site-packages/botocore/hooks.py:239: in _emit
-    response = handler(**kwargs)
-backend/.venv/lib/python3.13/site-packages/botocore/signers.py:106: in handler
-    return self.sign(operation_name, request)
-backend/.venv/lib/python3.13/site-packages/botocore/signers.py:198: in sign
-    auth.add_auth(request)
+backend/.venv/lib/python3.13/site-packages/fastapi/routing.py:327: in app
+    content = await serialize_response(
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-self = <botocore.auth.SigV4Auth object at 0x7f2191a85be0>
-request = <botocore.awsrequest.AWSRequest object at 0x7f2191a82d70>
+    async def serialize_response(
+        *,
+        field: Optional[ModelField] = None,
+        response_content: Any,
+        include: Optional[IncEx] = None,
+        exclude: Optional[IncEx] = None,
+        by_alias: bool = True,
+        exclude_unset: bool = False,
+        exclude_defaults: bool = False,
+        exclude_none: bool = False,
+        is_coroutine: bool = True,
+    ) -> Any:
+        if field:
+            errors = []
+            if not hasattr(field, "serialize"):
+                # pydantic v1
+                response_content = _prepare_response_content(
+                    response_content,
+                    exclude_unset=exclude_unset,
+                    exclude_defaults=exclude_defaults,
+                    exclude_none=exclude_none,
+                )
+            if is_coroutine:
+                value, errors_ = field.validate(response_content, {}, loc=("response",))
+            else:
+                value, errors_ = await run_in_threadpool(
+                    field.validate, response_content, {}, loc=("response",)
+                )
+            if isinstance(errors_, list):
+                errors.extend(errors_)
+            elif errors_:
+                errors.append(errors_)
+            if errors:
+>               raise ResponseValidationError(
+                    errors=_normalize_errors(errors), body=response_content
+                )
+E               fastapi.exceptions.ResponseValidationError: 7 validation errors:
+E                 {'type': 'string_type', 'loc': ('response', 'email'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.query().get().__getitem__().email' id='139925486463232'>}
+E                 {'type': 'string_type', 'loc': ('response', 'full_name'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.query().get().__getitem__().full_name' id='139925486463568'>}
+E                 {'type': 'string_type', 'loc': ('response', 'id'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.query().get().__getitem__().id' id='139925486464576'>}
+E                 {'type': 'string_type', 'loc': ('response', 'tenant_id'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.query().get().__getitem__().tenant_id' id='139925486464912'>}
+E                 {'type': 'string_type', 'loc': ('response', 'cognito_id'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.query().get().__getitem__().cognito_id' id='139925486465248'>}
+E                 {'type': 'string_type', 'loc': ('response', 'user_type'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.query().get().__getitem__().user_type' id='139925486466928'>}
+E                 {'type': 'string_type', 'loc': ('response', 'subscription_tier'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.query().get().__getitem__().subscription_tier' id='139925486467264'>}
 
-    def add_auth(self, request):
-        if self.credentials is None:
->           raise NoCredentialsError()
-E           botocore.exceptions.NoCredentialsError: Unable to locate credentials
-
-backend/.venv/lib/python3.13/site-packages/botocore/auth.py:424: NoCredentialsError
+backend/.venv/lib/python3.13/site-packages/fastapi/routing.py:176: ResponseValidationError
 _________________________ test_read_users_me_not_found _________________________
 
-mock_get_user = <AsyncMock name='get_user_by_cognito_id' id='139782154374512'>
+mock_get_user = <AsyncMock name='get_user_by_cognito_id' id='139925489469488'>
 override_get_current_user = None
 
     @patch("backend.app.db.dynamodb.get_user_by_cognito_id", new_callable=AsyncMock)
@@ -146,7 +149,7 @@ override_get_current_user = None
         mock_get_user.return_value = None
 >       response = client.get("/api/v1/users/me")
 
-backend/app/tests/api/endpoints/test_users.py:45: 
+backend/app/tests/api/endpoints/test_users.py:50: 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 backend/.venv/lib/python3.13/site-packages/starlette/testclient.py:465: in get
     return super().get(
@@ -206,57 +209,60 @@ backend/.venv/lib/python3.13/site-packages/starlette/_exception_handler.py:42: i
     await app(scope, receive, sender)
 backend/.venv/lib/python3.13/site-packages/starlette/routing.py:73: in app
     response = await f(request)
-backend/.venv/lib/python3.13/site-packages/fastapi/routing.py:301: in app
-    raw_response = await run_endpoint_function(
-backend/.venv/lib/python3.13/site-packages/fastapi/routing.py:212: in run_endpoint_function
-    return await dependant.call(**values)
-backend/app/api/endpoints/users.py:16: in read_users_me
-    user = await get_user_by_cognito_id(current_user["cognito_id"])
-backend/app/db/dynamodb.py:38: in get_user_by_cognito_id
-    response = users_table.query(
-backend/.venv/lib/python3.13/site-packages/boto3/resources/factory.py:581: in do_action
-    response = action(self, *args, **kwargs)
-backend/.venv/lib/python3.13/site-packages/boto3/resources/action.py:88: in __call__
-    response = getattr(parent.meta.client, operation_name)(*args, **params)
-backend/.venv/lib/python3.13/site-packages/botocore/client.py:570: in _api_call
-    return self._make_api_call(operation_name, kwargs)
-backend/.venv/lib/python3.13/site-packages/botocore/context.py:123: in wrapper
-    return func(*args, **kwargs)
-backend/.venv/lib/python3.13/site-packages/botocore/client.py:1013: in _make_api_call
-    http, parsed_response = self._make_request(
-backend/.venv/lib/python3.13/site-packages/botocore/client.py:1037: in _make_request
-    return self._endpoint.make_request(operation_model, request_dict)
-backend/.venv/lib/python3.13/site-packages/botocore/endpoint.py:119: in make_request
-    return self._send_request(request_dict, operation_model)
-backend/.venv/lib/python3.13/site-packages/botocore/endpoint.py:196: in _send_request
-    request = self.create_request(request_dict, operation_model)
-backend/.venv/lib/python3.13/site-packages/botocore/endpoint.py:132: in create_request
-    self._event_emitter.emit(
-backend/.venv/lib/python3.13/site-packages/botocore/hooks.py:412: in emit
-    return self._emitter.emit(aliased_event_name, **kwargs)
-backend/.venv/lib/python3.13/site-packages/botocore/hooks.py:256: in emit
-    return self._emit(event_name, kwargs)
-backend/.venv/lib/python3.13/site-packages/botocore/hooks.py:239: in _emit
-    response = handler(**kwargs)
-backend/.venv/lib/python3.13/site-packages/botocore/signers.py:106: in handler
-    return self.sign(operation_name, request)
-backend/.venv/lib/python3.13/site-packages/botocore/signers.py:198: in sign
-    auth.add_auth(request)
+backend/.venv/lib/python3.13/site-packages/fastapi/routing.py:327: in app
+    content = await serialize_response(
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-self = <botocore.auth.SigV4Auth object at 0x7f21918c2c10>
-request = <botocore.awsrequest.AWSRequest object at 0x7f2191a83230>
+    async def serialize_response(
+        *,
+        field: Optional[ModelField] = None,
+        response_content: Any,
+        include: Optional[IncEx] = None,
+        exclude: Optional[IncEx] = None,
+        by_alias: bool = True,
+        exclude_unset: bool = False,
+        exclude_defaults: bool = False,
+        exclude_none: bool = False,
+        is_coroutine: bool = True,
+    ) -> Any:
+        if field:
+            errors = []
+            if not hasattr(field, "serialize"):
+                # pydantic v1
+                response_content = _prepare_response_content(
+                    response_content,
+                    exclude_unset=exclude_unset,
+                    exclude_defaults=exclude_defaults,
+                    exclude_none=exclude_none,
+                )
+            if is_coroutine:
+                value, errors_ = field.validate(response_content, {}, loc=("response",))
+            else:
+                value, errors_ = await run_in_threadpool(
+                    field.validate, response_content, {}, loc=("response",)
+                )
+            if isinstance(errors_, list):
+                errors.extend(errors_)
+            elif errors_:
+                errors.append(errors_)
+            if errors:
+>               raise ResponseValidationError(
+                    errors=_normalize_errors(errors), body=response_content
+                )
+E               fastapi.exceptions.ResponseValidationError: 7 validation errors:
+E                 {'type': 'string_type', 'loc': ('response', 'email'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.query().get().__getitem__().email' id='139925489471840'>}
+E                 {'type': 'string_type', 'loc': ('response', 'full_name'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.query().get().__getitem__().full_name' id='139925489472176'>}
+E                 {'type': 'string_type', 'loc': ('response', 'id'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.query().get().__getitem__().id' id='139925489473184'>}
+E                 {'type': 'string_type', 'loc': ('response', 'tenant_id'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.query().get().__getitem__().tenant_id' id='139925489473520'>}
+E                 {'type': 'string_type', 'loc': ('response', 'cognito_id'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.query().get().__getitem__().cognito_id' id='139925489473856'>}
+E                 {'type': 'string_type', 'loc': ('response', 'user_type'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.query().get().__getitem__().user_type' id='139925489475536'>}
+E                 {'type': 'string_type', 'loc': ('response', 'subscription_tier'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.query().get().__getitem__().subscription_tier' id='139925489475872'>}
 
-    def add_auth(self, request):
-        if self.credentials is None:
->           raise NoCredentialsError()
-E           botocore.exceptions.NoCredentialsError: Unable to locate credentials
-
-backend/.venv/lib/python3.13/site-packages/botocore/auth.py:424: NoCredentialsError
+backend/.venv/lib/python3.13/site-packages/fastapi/routing.py:176: ResponseValidationError
 _____________________ test_update_users_me_partial_update ______________________
 
-mock_update_user = <AsyncMock name='update_user' id='139782154380896'>
-mock_get_user = <AsyncMock name='get_user_by_cognito_id' id='139782154381568'>
+mock_update_user = <AsyncMock name='update_user' id='139925489479232'>
+mock_get_user = <AsyncMock name='get_user_by_cognito_id' id='139925489471504'>
 override_get_current_user = None
 
     @patch("backend.app.db.dynamodb.get_user_by_cognito_id", new_callable=AsyncMock)
@@ -268,7 +274,7 @@ override_get_current_user = None
         mock_update_user.return_value = updated
 >       response = client.put("/api/v1/users/me", json={"full_name": "Jane Doe"})
 
-backend/app/tests/api/endpoints/test_users.py:55: 
+backend/app/tests/api/endpoints/test_users.py:60: 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 backend/.venv/lib/python3.13/site-packages/starlette/testclient.py:569: in put
     return super().put(
@@ -328,57 +334,60 @@ backend/.venv/lib/python3.13/site-packages/starlette/_exception_handler.py:42: i
     await app(scope, receive, sender)
 backend/.venv/lib/python3.13/site-packages/starlette/routing.py:73: in app
     response = await f(request)
-backend/.venv/lib/python3.13/site-packages/fastapi/routing.py:301: in app
-    raw_response = await run_endpoint_function(
-backend/.venv/lib/python3.13/site-packages/fastapi/routing.py:212: in run_endpoint_function
-    return await dependant.call(**values)
-backend/app/api/endpoints/users.py:29: in update_users_me
-    user = await get_user_by_cognito_id(current_user["cognito_id"])
-backend/app/db/dynamodb.py:38: in get_user_by_cognito_id
-    response = users_table.query(
-backend/.venv/lib/python3.13/site-packages/boto3/resources/factory.py:581: in do_action
-    response = action(self, *args, **kwargs)
-backend/.venv/lib/python3.13/site-packages/boto3/resources/action.py:88: in __call__
-    response = getattr(parent.meta.client, operation_name)(*args, **params)
-backend/.venv/lib/python3.13/site-packages/botocore/client.py:570: in _api_call
-    return self._make_api_call(operation_name, kwargs)
-backend/.venv/lib/python3.13/site-packages/botocore/context.py:123: in wrapper
-    return func(*args, **kwargs)
-backend/.venv/lib/python3.13/site-packages/botocore/client.py:1013: in _make_api_call
-    http, parsed_response = self._make_request(
-backend/.venv/lib/python3.13/site-packages/botocore/client.py:1037: in _make_request
-    return self._endpoint.make_request(operation_model, request_dict)
-backend/.venv/lib/python3.13/site-packages/botocore/endpoint.py:119: in make_request
-    return self._send_request(request_dict, operation_model)
-backend/.venv/lib/python3.13/site-packages/botocore/endpoint.py:196: in _send_request
-    request = self.create_request(request_dict, operation_model)
-backend/.venv/lib/python3.13/site-packages/botocore/endpoint.py:132: in create_request
-    self._event_emitter.emit(
-backend/.venv/lib/python3.13/site-packages/botocore/hooks.py:412: in emit
-    return self._emitter.emit(aliased_event_name, **kwargs)
-backend/.venv/lib/python3.13/site-packages/botocore/hooks.py:256: in emit
-    return self._emit(event_name, kwargs)
-backend/.venv/lib/python3.13/site-packages/botocore/hooks.py:239: in _emit
-    response = handler(**kwargs)
-backend/.venv/lib/python3.13/site-packages/botocore/signers.py:106: in handler
-    return self.sign(operation_name, request)
-backend/.venv/lib/python3.13/site-packages/botocore/signers.py:198: in sign
-    auth.add_auth(request)
+backend/.venv/lib/python3.13/site-packages/fastapi/routing.py:327: in app
+    content = await serialize_response(
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-self = <botocore.auth.SigV4Auth object at 0x7f2191618190>
-request = <botocore.awsrequest.AWSRequest object at 0x7f21918aee70>
+    async def serialize_response(
+        *,
+        field: Optional[ModelField] = None,
+        response_content: Any,
+        include: Optional[IncEx] = None,
+        exclude: Optional[IncEx] = None,
+        by_alias: bool = True,
+        exclude_unset: bool = False,
+        exclude_defaults: bool = False,
+        exclude_none: bool = False,
+        is_coroutine: bool = True,
+    ) -> Any:
+        if field:
+            errors = []
+            if not hasattr(field, "serialize"):
+                # pydantic v1
+                response_content = _prepare_response_content(
+                    response_content,
+                    exclude_unset=exclude_unset,
+                    exclude_defaults=exclude_defaults,
+                    exclude_none=exclude_none,
+                )
+            if is_coroutine:
+                value, errors_ = field.validate(response_content, {}, loc=("response",))
+            else:
+                value, errors_ = await run_in_threadpool(
+                    field.validate, response_content, {}, loc=("response",)
+                )
+            if isinstance(errors_, list):
+                errors.extend(errors_)
+            elif errors_:
+                errors.append(errors_)
+            if errors:
+>               raise ResponseValidationError(
+                    errors=_normalize_errors(errors), body=response_content
+                )
+E               fastapi.exceptions.ResponseValidationError: 7 validation errors:
+E                 {'type': 'string_type', 'loc': ('response', 'email'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.update_item().get().email' id='139925489482928'>}
+E                 {'type': 'string_type', 'loc': ('response', 'full_name'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.update_item().get().full_name' id='139925489483264'>}
+E                 {'type': 'string_type', 'loc': ('response', 'id'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.update_item().get().id' id='139925486076656'>}
+E                 {'type': 'string_type', 'loc': ('response', 'tenant_id'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.update_item().get().tenant_id' id='139925486076992'>}
+E                 {'type': 'string_type', 'loc': ('response', 'cognito_id'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.update_item().get().cognito_id' id='139925486077328'>}
+E                 {'type': 'string_type', 'loc': ('response', 'user_type'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.update_item().get().user_type' id='139925486079008'>}
+E                 {'type': 'string_type', 'loc': ('response', 'subscription_tier'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.update_item().get().subscription_tier' id='139925486079344'>}
 
-    def add_auth(self, request):
-        if self.credentials is None:
->           raise NoCredentialsError()
-E           botocore.exceptions.NoCredentialsError: Unable to locate credentials
-
-backend/.venv/lib/python3.13/site-packages/botocore/auth.py:424: NoCredentialsError
+backend/.venv/lib/python3.13/site-packages/fastapi/routing.py:176: ResponseValidationError
 __________________________ test_update_users_me_noop ___________________________
 
-mock_update_user = <AsyncMock name='update_user' id='139782176927968'>
-mock_get_user = <AsyncMock name='get_user_by_cognito_id' id='139782176929312'>
+mock_update_user = <AsyncMock name='update_user' id='139925486083040'>
+mock_get_user = <AsyncMock name='get_user_by_cognito_id' id='139925486080016'>
 override_get_current_user = None
 
     @patch("backend.app.db.dynamodb.get_user_by_cognito_id", new_callable=AsyncMock)
@@ -387,7 +396,7 @@ override_get_current_user = None
         mock_get_user.return_value = MOCK_USER.copy()
 >       response = client.put("/api/v1/users/me", json={})
 
-backend/app/tests/api/endpoints/test_users.py:65: 
+backend/app/tests/api/endpoints/test_users.py:70: 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 backend/.venv/lib/python3.13/site-packages/starlette/testclient.py:569: in put
     return super().put(
@@ -447,56 +456,59 @@ backend/.venv/lib/python3.13/site-packages/starlette/_exception_handler.py:42: i
     await app(scope, receive, sender)
 backend/.venv/lib/python3.13/site-packages/starlette/routing.py:73: in app
     response = await f(request)
-backend/.venv/lib/python3.13/site-packages/fastapi/routing.py:301: in app
-    raw_response = await run_endpoint_function(
-backend/.venv/lib/python3.13/site-packages/fastapi/routing.py:212: in run_endpoint_function
-    return await dependant.call(**values)
-backend/app/api/endpoints/users.py:29: in update_users_me
-    user = await get_user_by_cognito_id(current_user["cognito_id"])
-backend/app/db/dynamodb.py:38: in get_user_by_cognito_id
-    response = users_table.query(
-backend/.venv/lib/python3.13/site-packages/boto3/resources/factory.py:581: in do_action
-    response = action(self, *args, **kwargs)
-backend/.venv/lib/python3.13/site-packages/boto3/resources/action.py:88: in __call__
-    response = getattr(parent.meta.client, operation_name)(*args, **params)
-backend/.venv/lib/python3.13/site-packages/botocore/client.py:570: in _api_call
-    return self._make_api_call(operation_name, kwargs)
-backend/.venv/lib/python3.13/site-packages/botocore/context.py:123: in wrapper
-    return func(*args, **kwargs)
-backend/.venv/lib/python3.13/site-packages/botocore/client.py:1013: in _make_api_call
-    http, parsed_response = self._make_request(
-backend/.venv/lib/python3.13/site-packages/botocore/client.py:1037: in _make_request
-    return self._endpoint.make_request(operation_model, request_dict)
-backend/.venv/lib/python3.13/site-packages/botocore/endpoint.py:119: in make_request
-    return self._send_request(request_dict, operation_model)
-backend/.venv/lib/python3.13/site-packages/botocore/endpoint.py:196: in _send_request
-    request = self.create_request(request_dict, operation_model)
-backend/.venv/lib/python3.13/site-packages/botocore/endpoint.py:132: in create_request
-    self._event_emitter.emit(
-backend/.venv/lib/python3.13/site-packages/botocore/hooks.py:412: in emit
-    return self._emitter.emit(aliased_event_name, **kwargs)
-backend/.venv/lib/python3.13/site-packages/botocore/hooks.py:256: in emit
-    return self._emit(event_name, kwargs)
-backend/.venv/lib/python3.13/site-packages/botocore/hooks.py:239: in _emit
-    response = handler(**kwargs)
-backend/.venv/lib/python3.13/site-packages/botocore/signers.py:106: in handler
-    return self.sign(operation_name, request)
-backend/.venv/lib/python3.13/site-packages/botocore/signers.py:198: in sign
-    auth.add_auth(request)
+backend/.venv/lib/python3.13/site-packages/fastapi/routing.py:327: in app
+    content = await serialize_response(
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-self = <botocore.auth.SigV4Auth object at 0x7f2191a816e0>
-request = <botocore.awsrequest.AWSRequest object at 0x7f2192f4d040>
+    async def serialize_response(
+        *,
+        field: Optional[ModelField] = None,
+        response_content: Any,
+        include: Optional[IncEx] = None,
+        exclude: Optional[IncEx] = None,
+        by_alias: bool = True,
+        exclude_unset: bool = False,
+        exclude_defaults: bool = False,
+        exclude_none: bool = False,
+        is_coroutine: bool = True,
+    ) -> Any:
+        if field:
+            errors = []
+            if not hasattr(field, "serialize"):
+                # pydantic v1
+                response_content = _prepare_response_content(
+                    response_content,
+                    exclude_unset=exclude_unset,
+                    exclude_defaults=exclude_defaults,
+                    exclude_none=exclude_none,
+                )
+            if is_coroutine:
+                value, errors_ = field.validate(response_content, {}, loc=("response",))
+            else:
+                value, errors_ = await run_in_threadpool(
+                    field.validate, response_content, {}, loc=("response",)
+                )
+            if isinstance(errors_, list):
+                errors.extend(errors_)
+            elif errors_:
+                errors.append(errors_)
+            if errors:
+>               raise ResponseValidationError(
+                    errors=_normalize_errors(errors), body=response_content
+                )
+E               fastapi.exceptions.ResponseValidationError: 7 validation errors:
+E                 {'type': 'string_type', 'loc': ('response', 'email'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.query().get().__getitem__().email' id='139925486084720'>}
+E                 {'type': 'string_type', 'loc': ('response', 'full_name'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.query().get().__getitem__().full_name' id='139925486085056'>}
+E                 {'type': 'string_type', 'loc': ('response', 'id'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.query().get().__getitem__().id' id='139925486086064'>}
+E                 {'type': 'string_type', 'loc': ('response', 'tenant_id'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.query().get().__getitem__().tenant_id' id='139925486086400'>}
+E                 {'type': 'string_type', 'loc': ('response', 'cognito_id'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.query().get().__getitem__().cognito_id' id='139925486086736'>}
+E                 {'type': 'string_type', 'loc': ('response', 'user_type'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.query().get().__getitem__().user_type' id='139925486088416'>}
+E                 {'type': 'string_type', 'loc': ('response', 'subscription_tier'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.query().get().__getitem__().subscription_tier' id='139925486088752'>}
 
-    def add_auth(self, request):
-        if self.credentials is None:
->           raise NoCredentialsError()
-E           botocore.exceptions.NoCredentialsError: Unable to locate credentials
-
-backend/.venv/lib/python3.13/site-packages/botocore/auth.py:424: NoCredentialsError
+backend/.venv/lib/python3.13/site-packages/fastapi/routing.py:176: ResponseValidationError
 ________________________ test_update_users_me_not_found ________________________
 
-mock_get_user = <AsyncMock name='get_user_by_cognito_id' id='139782176930656'>
+mock_get_user = <AsyncMock name='get_user_by_cognito_id' id='139925489471504'>
 override_get_current_user = None
 
     @patch("backend.app.db.dynamodb.get_user_by_cognito_id", new_callable=AsyncMock)
@@ -504,7 +516,7 @@ override_get_current_user = None
         mock_get_user.return_value = None
 >       response = client.put("/api/v1/users/me", json={"full_name": "Jane Doe"})
 
-backend/app/tests/api/endpoints/test_users.py:74: 
+backend/app/tests/api/endpoints/test_users.py:79: 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 backend/.venv/lib/python3.13/site-packages/starlette/testclient.py:569: in put
     return super().put(
@@ -564,57 +576,60 @@ backend/.venv/lib/python3.13/site-packages/starlette/_exception_handler.py:42: i
     await app(scope, receive, sender)
 backend/.venv/lib/python3.13/site-packages/starlette/routing.py:73: in app
     response = await f(request)
-backend/.venv/lib/python3.13/site-packages/fastapi/routing.py:301: in app
-    raw_response = await run_endpoint_function(
-backend/.venv/lib/python3.13/site-packages/fastapi/routing.py:212: in run_endpoint_function
-    return await dependant.call(**values)
-backend/app/api/endpoints/users.py:29: in update_users_me
-    user = await get_user_by_cognito_id(current_user["cognito_id"])
-backend/app/db/dynamodb.py:38: in get_user_by_cognito_id
-    response = users_table.query(
-backend/.venv/lib/python3.13/site-packages/boto3/resources/factory.py:581: in do_action
-    response = action(self, *args, **kwargs)
-backend/.venv/lib/python3.13/site-packages/boto3/resources/action.py:88: in __call__
-    response = getattr(parent.meta.client, operation_name)(*args, **params)
-backend/.venv/lib/python3.13/site-packages/botocore/client.py:570: in _api_call
-    return self._make_api_call(operation_name, kwargs)
-backend/.venv/lib/python3.13/site-packages/botocore/context.py:123: in wrapper
-    return func(*args, **kwargs)
-backend/.venv/lib/python3.13/site-packages/botocore/client.py:1013: in _make_api_call
-    http, parsed_response = self._make_request(
-backend/.venv/lib/python3.13/site-packages/botocore/client.py:1037: in _make_request
-    return self._endpoint.make_request(operation_model, request_dict)
-backend/.venv/lib/python3.13/site-packages/botocore/endpoint.py:119: in make_request
-    return self._send_request(request_dict, operation_model)
-backend/.venv/lib/python3.13/site-packages/botocore/endpoint.py:196: in _send_request
-    request = self.create_request(request_dict, operation_model)
-backend/.venv/lib/python3.13/site-packages/botocore/endpoint.py:132: in create_request
-    self._event_emitter.emit(
-backend/.venv/lib/python3.13/site-packages/botocore/hooks.py:412: in emit
-    return self._emitter.emit(aliased_event_name, **kwargs)
-backend/.venv/lib/python3.13/site-packages/botocore/hooks.py:256: in emit
-    return self._emit(event_name, kwargs)
-backend/.venv/lib/python3.13/site-packages/botocore/hooks.py:239: in _emit
-    response = handler(**kwargs)
-backend/.venv/lib/python3.13/site-packages/botocore/signers.py:106: in handler
-    return self.sign(operation_name, request)
-backend/.venv/lib/python3.13/site-packages/botocore/signers.py:198: in sign
-    auth.add_auth(request)
+backend/.venv/lib/python3.13/site-packages/fastapi/routing.py:327: in app
+    content = await serialize_response(
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-self = <botocore.auth.SigV4Auth object at 0x7f219198c180>
-request = <botocore.awsrequest.AWSRequest object at 0x7f2192fcc490>
+    async def serialize_response(
+        *,
+        field: Optional[ModelField] = None,
+        response_content: Any,
+        include: Optional[IncEx] = None,
+        exclude: Optional[IncEx] = None,
+        by_alias: bool = True,
+        exclude_unset: bool = False,
+        exclude_defaults: bool = False,
+        exclude_none: bool = False,
+        is_coroutine: bool = True,
+    ) -> Any:
+        if field:
+            errors = []
+            if not hasattr(field, "serialize"):
+                # pydantic v1
+                response_content = _prepare_response_content(
+                    response_content,
+                    exclude_unset=exclude_unset,
+                    exclude_defaults=exclude_defaults,
+                    exclude_none=exclude_none,
+                )
+            if is_coroutine:
+                value, errors_ = field.validate(response_content, {}, loc=("response",))
+            else:
+                value, errors_ = await run_in_threadpool(
+                    field.validate, response_content, {}, loc=("response",)
+                )
+            if isinstance(errors_, list):
+                errors.extend(errors_)
+            elif errors_:
+                errors.append(errors_)
+            if errors:
+>               raise ResponseValidationError(
+                    errors=_normalize_errors(errors), body=response_content
+                )
+E               fastapi.exceptions.ResponseValidationError: 7 validation errors:
+E                 {'type': 'string_type', 'loc': ('response', 'email'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.update_item().get().email' id='139925489477888'>}
+E                 {'type': 'string_type', 'loc': ('response', 'full_name'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.update_item().get().full_name' id='139925489481584'>}
+E                 {'type': 'string_type', 'loc': ('response', 'id'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.update_item().get().id' id='139925489475200'>}
+E                 {'type': 'string_type', 'loc': ('response', 'tenant_id'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.update_item().get().tenant_id' id='139925489474528'>}
+E                 {'type': 'string_type', 'loc': ('response', 'cognito_id'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.update_item().get().cognito_id' id='139925489472848'>}
+E                 {'type': 'string_type', 'loc': ('response', 'user_type'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.update_item().get().user_type' id='139925489472176'>}
+E                 {'type': 'string_type', 'loc': ('response', 'subscription_tier'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.update_item().get().subscription_tier' id='139925489473184'>}
 
-    def add_auth(self, request):
-        if self.credentials is None:
->           raise NoCredentialsError()
-E           botocore.exceptions.NoCredentialsError: Unable to locate credentials
-
-backend/.venv/lib/python3.13/site-packages/botocore/auth.py:424: NoCredentialsError
+backend/.venv/lib/python3.13/site-packages/fastapi/routing.py:176: ResponseValidationError
 _____________________ test_update_users_me_dynamodb_error ______________________
 
-mock_update_user = <AsyncMock name='update_user' id='139782176930992'>
-mock_get_user = <AsyncMock name='get_user_by_cognito_id' id='139782154374512'>
+mock_update_user = <AsyncMock name='update_user' id='139925489469152'>
+mock_get_user = <AsyncMock name='get_user_by_cognito_id' id='139925489478896'>
 override_get_current_user = None
 
     @patch("backend.app.db.dynamodb.get_user_by_cognito_id", new_callable=AsyncMock)
@@ -624,7 +639,7 @@ override_get_current_user = None
         mock_update_user.side_effect = Exception("DynamoDB error")
 >       response = client.put("/api/v1/users/me", json={"full_name": "Jane Doe"})
 
-backend/app/tests/api/endpoints/test_users.py:82: 
+backend/app/tests/api/endpoints/test_users.py:87: 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 backend/.venv/lib/python3.13/site-packages/starlette/testclient.py:569: in put
     return super().put(
@@ -684,53 +699,56 @@ backend/.venv/lib/python3.13/site-packages/starlette/_exception_handler.py:42: i
     await app(scope, receive, sender)
 backend/.venv/lib/python3.13/site-packages/starlette/routing.py:73: in app
     response = await f(request)
-backend/.venv/lib/python3.13/site-packages/fastapi/routing.py:301: in app
-    raw_response = await run_endpoint_function(
-backend/.venv/lib/python3.13/site-packages/fastapi/routing.py:212: in run_endpoint_function
-    return await dependant.call(**values)
-backend/app/api/endpoints/users.py:29: in update_users_me
-    user = await get_user_by_cognito_id(current_user["cognito_id"])
-backend/app/db/dynamodb.py:38: in get_user_by_cognito_id
-    response = users_table.query(
-backend/.venv/lib/python3.13/site-packages/boto3/resources/factory.py:581: in do_action
-    response = action(self, *args, **kwargs)
-backend/.venv/lib/python3.13/site-packages/boto3/resources/action.py:88: in __call__
-    response = getattr(parent.meta.client, operation_name)(*args, **params)
-backend/.venv/lib/python3.13/site-packages/botocore/client.py:570: in _api_call
-    return self._make_api_call(operation_name, kwargs)
-backend/.venv/lib/python3.13/site-packages/botocore/context.py:123: in wrapper
-    return func(*args, **kwargs)
-backend/.venv/lib/python3.13/site-packages/botocore/client.py:1013: in _make_api_call
-    http, parsed_response = self._make_request(
-backend/.venv/lib/python3.13/site-packages/botocore/client.py:1037: in _make_request
-    return self._endpoint.make_request(operation_model, request_dict)
-backend/.venv/lib/python3.13/site-packages/botocore/endpoint.py:119: in make_request
-    return self._send_request(request_dict, operation_model)
-backend/.venv/lib/python3.13/site-packages/botocore/endpoint.py:196: in _send_request
-    request = self.create_request(request_dict, operation_model)
-backend/.venv/lib/python3.13/site-packages/botocore/endpoint.py:132: in create_request
-    self._event_emitter.emit(
-backend/.venv/lib/python3.13/site-packages/botocore/hooks.py:412: in emit
-    return self._emitter.emit(aliased_event_name, **kwargs)
-backend/.venv/lib/python3.13/site-packages/botocore/hooks.py:256: in emit
-    return self._emit(event_name, kwargs)
-backend/.venv/lib/python3.13/site-packages/botocore/hooks.py:239: in _emit
-    response = handler(**kwargs)
-backend/.venv/lib/python3.13/site-packages/botocore/signers.py:106: in handler
-    return self.sign(operation_name, request)
-backend/.venv/lib/python3.13/site-packages/botocore/signers.py:198: in sign
-    auth.add_auth(request)
+backend/.venv/lib/python3.13/site-packages/fastapi/routing.py:327: in app
+    content = await serialize_response(
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-self = <botocore.auth.SigV4Auth object at 0x7f21918aed50>
-request = <botocore.awsrequest.AWSRequest object at 0x7f2192fc2150>
+    async def serialize_response(
+        *,
+        field: Optional[ModelField] = None,
+        response_content: Any,
+        include: Optional[IncEx] = None,
+        exclude: Optional[IncEx] = None,
+        by_alias: bool = True,
+        exclude_unset: bool = False,
+        exclude_defaults: bool = False,
+        exclude_none: bool = False,
+        is_coroutine: bool = True,
+    ) -> Any:
+        if field:
+            errors = []
+            if not hasattr(field, "serialize"):
+                # pydantic v1
+                response_content = _prepare_response_content(
+                    response_content,
+                    exclude_unset=exclude_unset,
+                    exclude_defaults=exclude_defaults,
+                    exclude_none=exclude_none,
+                )
+            if is_coroutine:
+                value, errors_ = field.validate(response_content, {}, loc=("response",))
+            else:
+                value, errors_ = await run_in_threadpool(
+                    field.validate, response_content, {}, loc=("response",)
+                )
+            if isinstance(errors_, list):
+                errors.extend(errors_)
+            elif errors_:
+                errors.append(errors_)
+            if errors:
+>               raise ResponseValidationError(
+                    errors=_normalize_errors(errors), body=response_content
+                )
+E               fastapi.exceptions.ResponseValidationError: 7 validation errors:
+E                 {'type': 'string_type', 'loc': ('response', 'email'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.update_item().get().email' id='139925486465584'>}
+E                 {'type': 'string_type', 'loc': ('response', 'full_name'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.update_item().get().full_name' id='139925486463904'>}
+E                 {'type': 'string_type', 'loc': ('response', 'id'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.update_item().get().id' id='139925486464576'>}
+E                 {'type': 'string_type', 'loc': ('response', 'tenant_id'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.update_item().get().tenant_id' id='139925486464912'>}
+E                 {'type': 'string_type', 'loc': ('response', 'cognito_id'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.update_item().get().cognito_id' id='139925486465248'>}
+E                 {'type': 'string_type', 'loc': ('response', 'user_type'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.update_item().get().user_type' id='139925486461888'>}
+E                 {'type': 'string_type', 'loc': ('response', 'subscription_tier'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.update_item().get().subscription_tier' id='139925486461552'>}
 
-    def add_auth(self, request):
-        if self.credentials is None:
->           raise NoCredentialsError()
-E           botocore.exceptions.NoCredentialsError: Unable to locate credentials
-
-backend/.venv/lib/python3.13/site-packages/botocore/auth.py:424: NoCredentialsError
+backend/.venv/lib/python3.13/site-packages/fastapi/routing.py:176: ResponseValidationError
 =============================== warnings summary ===============================
 backend/.venv/lib/python3.13/site-packages/pydantic/_internal/_config.py:323
   /home/runner/work/summit-seo-amplify/summit-seo-amplify/backend/.venv/lib/python3.13/site-packages/pydantic/_internal/_config.py:323: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.11/migration/
@@ -738,10 +756,52 @@ backend/.venv/lib/python3.13/site-packages/pydantic/_internal/_config.py:323
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
 =========================== short test summary info ============================
-FAILED backend/app/tests/api/endpoints/test_users.py::test_read_users_me_success - botocore.exceptions.NoCredentialsError: Unable to locate credentials
-FAILED backend/app/tests/api/endpoints/test_users.py::test_read_users_me_not_found - botocore.exceptions.NoCredentialsError: Unable to locate credentials
-FAILED backend/app/tests/api/endpoints/test_users.py::test_update_users_me_partial_update - botocore.exceptions.NoCredentialsError: Unable to locate credentials
-FAILED backend/app/tests/api/endpoints/test_users.py::test_update_users_me_noop - botocore.exceptions.NoCredentialsError: Unable to locate credentials
-FAILED backend/app/tests/api/endpoints/test_users.py::test_update_users_me_not_found - botocore.exceptions.NoCredentialsError: Unable to locate credentials
-FAILED backend/app/tests/api/endpoints/test_users.py::test_update_users_me_dynamodb_error - botocore.exceptions.NoCredentialsError: Unable to locate credentials
-========================= 6 failed, 1 warning in 3.17s =========================
+FAILED backend/app/tests/api/endpoints/test_users.py::test_read_users_me_success - fastapi.exceptions.ResponseValidationError: 7 validation errors:
+  {'type': 'string_type', 'loc': ('response', 'email'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.query().get().__getitem__().email' id='139925486463232'>}
+  {'type': 'string_type', 'loc': ('response', 'full_name'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.query().get().__getitem__().full_name' id='139925486463568'>}
+  {'type': 'string_type', 'loc': ('response', 'id'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.query().get().__getitem__().id' id='139925486464576'>}
+  {'type': 'string_type', 'loc': ('response', 'tenant_id'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.query().get().__getitem__().tenant_id' id='139925486464912'>}
+  {'type': 'string_type', 'loc': ('response', 'cognito_id'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.query().get().__getitem__().cognito_id' id='139925486465248'>}
+  {'type': 'string_type', 'loc': ('response', 'user_type'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.query().get().__getitem__().user_type' id='139925486466928'>}
+  {'type': 'string_type', 'loc': ('response', 'subscription_tier'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.query().get().__getitem__().subscription_tier' id='139925486467264'>}
+FAILED backend/app/tests/api/endpoints/test_users.py::test_read_users_me_not_found - fastapi.exceptions.ResponseValidationError: 7 validation errors:
+  {'type': 'string_type', 'loc': ('response', 'email'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.query().get().__getitem__().email' id='139925489471840'>}
+  {'type': 'string_type', 'loc': ('response', 'full_name'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.query().get().__getitem__().full_name' id='139925489472176'>}
+  {'type': 'string_type', 'loc': ('response', 'id'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.query().get().__getitem__().id' id='139925489473184'>}
+  {'type': 'string_type', 'loc': ('response', 'tenant_id'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.query().get().__getitem__().tenant_id' id='139925489473520'>}
+  {'type': 'string_type', 'loc': ('response', 'cognito_id'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.query().get().__getitem__().cognito_id' id='139925489473856'>}
+  {'type': 'string_type', 'loc': ('response', 'user_type'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.query().get().__getitem__().user_type' id='139925489475536'>}
+  {'type': 'string_type', 'loc': ('response', 'subscription_tier'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.query().get().__getitem__().subscription_tier' id='139925489475872'>}
+FAILED backend/app/tests/api/endpoints/test_users.py::test_update_users_me_partial_update - fastapi.exceptions.ResponseValidationError: 7 validation errors:
+  {'type': 'string_type', 'loc': ('response', 'email'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.update_item().get().email' id='139925489482928'>}
+  {'type': 'string_type', 'loc': ('response', 'full_name'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.update_item().get().full_name' id='139925489483264'>}
+  {'type': 'string_type', 'loc': ('response', 'id'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.update_item().get().id' id='139925486076656'>}
+  {'type': 'string_type', 'loc': ('response', 'tenant_id'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.update_item().get().tenant_id' id='139925486076992'>}
+  {'type': 'string_type', 'loc': ('response', 'cognito_id'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.update_item().get().cognito_id' id='139925486077328'>}
+  {'type': 'string_type', 'loc': ('response', 'user_type'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.update_item().get().user_type' id='139925486079008'>}
+  {'type': 'string_type', 'loc': ('response', 'subscription_tier'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.update_item().get().subscription_tier' id='139925486079344'>}
+FAILED backend/app/tests/api/endpoints/test_users.py::test_update_users_me_noop - fastapi.exceptions.ResponseValidationError: 7 validation errors:
+  {'type': 'string_type', 'loc': ('response', 'email'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.query().get().__getitem__().email' id='139925486084720'>}
+  {'type': 'string_type', 'loc': ('response', 'full_name'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.query().get().__getitem__().full_name' id='139925486085056'>}
+  {'type': 'string_type', 'loc': ('response', 'id'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.query().get().__getitem__().id' id='139925486086064'>}
+  {'type': 'string_type', 'loc': ('response', 'tenant_id'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.query().get().__getitem__().tenant_id' id='139925486086400'>}
+  {'type': 'string_type', 'loc': ('response', 'cognito_id'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.query().get().__getitem__().cognito_id' id='139925486086736'>}
+  {'type': 'string_type', 'loc': ('response', 'user_type'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.query().get().__getitem__().user_type' id='139925486088416'>}
+  {'type': 'string_type', 'loc': ('response', 'subscription_tier'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.query().get().__getitem__().subscription_tier' id='139925486088752'>}
+FAILED backend/app/tests/api/endpoints/test_users.py::test_update_users_me_not_found - fastapi.exceptions.ResponseValidationError: 7 validation errors:
+  {'type': 'string_type', 'loc': ('response', 'email'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.update_item().get().email' id='139925489477888'>}
+  {'type': 'string_type', 'loc': ('response', 'full_name'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.update_item().get().full_name' id='139925489481584'>}
+  {'type': 'string_type', 'loc': ('response', 'id'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.update_item().get().id' id='139925489475200'>}
+  {'type': 'string_type', 'loc': ('response', 'tenant_id'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.update_item().get().tenant_id' id='139925489474528'>}
+  {'type': 'string_type', 'loc': ('response', 'cognito_id'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.update_item().get().cognito_id' id='139925489472848'>}
+  {'type': 'string_type', 'loc': ('response', 'user_type'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.update_item().get().user_type' id='139925489472176'>}
+  {'type': 'string_type', 'loc': ('response', 'subscription_tier'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.update_item().get().subscription_tier' id='139925489473184'>}
+FAILED backend/app/tests/api/endpoints/test_users.py::test_update_users_me_dynamodb_error - fastapi.exceptions.ResponseValidationError: 7 validation errors:
+  {'type': 'string_type', 'loc': ('response', 'email'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.update_item().get().email' id='139925486465584'>}
+  {'type': 'string_type', 'loc': ('response', 'full_name'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.update_item().get().full_name' id='139925486463904'>}
+  {'type': 'string_type', 'loc': ('response', 'id'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.update_item().get().id' id='139925486464576'>}
+  {'type': 'string_type', 'loc': ('response', 'tenant_id'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.update_item().get().tenant_id' id='139925486464912'>}
+  {'type': 'string_type', 'loc': ('response', 'cognito_id'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.update_item().get().cognito_id' id='139925486465248'>}
+  {'type': 'string_type', 'loc': ('response', 'user_type'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.update_item().get().user_type' id='139925486461888'>}
+  {'type': 'string_type', 'loc': ('response', 'subscription_tier'), 'msg': 'Input should be a valid string', 'input': <MagicMock name='mock.update_item().get().subscription_tier' id='139925486461552'>}
+========================= 6 failed, 1 warning in 2.75s =========================
