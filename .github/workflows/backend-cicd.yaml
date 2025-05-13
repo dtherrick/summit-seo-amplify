@@ -21,7 +21,7 @@ on:
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
   CDK_STACK_NAME: ${{ secrets.CDK_STACK_NAME }}
-  PYTHON_VERSION: '3.13'
+  PYTHON_VERSION: '3.12'
   NODE_VERSION: '20.x'
 
 permissions: # Needed for OIDC
@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./backend
+        working-directory: . # Run from repo root
 
     steps:
       - name: Checkout code
@@ -49,23 +49,24 @@ jobs:
         run: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
           echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-        working-directory: ${{ github.workspace }}
 
       - name: Setup backend virtual environment and install dependencies
         run: |
-          uv venv  # Creates .venv in CWD (./backend)
-          source .venv/bin/activate # Activates ./backend/.venv
-          uv pip sync requirements.lock # Syncs ./backend/requirements.lock into active venv
+          cd backend
+          uv venv  # Creates .venv in ./backend
+          source .venv/bin/activate
+          uv pip sync requirements.lock
 
       - name: Lint with Ruff
         run: |
-          source .venv/bin/activate # Activate the correct venv
-          ruff check . # ruff is found from the venv
+          cd backend
+          source .venv/bin/activate
+          ruff check .
 
       - name: Test with pytest
         run: |
-          source .venv/bin/activate # Activate the correct venv
-          PYTHONPATH=$PWD pytest -v || [ $? -eq 5 ] # Allow exit code 5 (no tests found)
+          source backend/.venv/bin/activate
+          PYTHONPATH=$PWD pytest -v backend/app/tests || [ $? -eq 5 ]
 
   deploy-cdk:
     name: Deploy CDK Stack
