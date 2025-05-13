@@ -3,4 +3,4 @@
 
 [tool.ruff.lint]
 # Ignores F401 (unused import)
-# ignore = ["F401", "F841"]
+ignore = ["F401", "F841"]
