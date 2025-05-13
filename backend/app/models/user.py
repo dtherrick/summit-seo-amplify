@@ -9,6 +9,12 @@ class UserBase(BaseModel):
     full_name: Optional[str] = None
     is_active: bool = True
 
+class UserUpdate(BaseModel):
+    """User update model for partial updates."""
+    email: Optional[EmailStr] = None
+    full_name: Optional[str] = None
+    is_active: Optional[bool] = None
+
 class UserCreate(UserBase):
     """User creation model."""
     tenant_id: str
