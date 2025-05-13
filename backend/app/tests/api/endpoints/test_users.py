@@ -1,7 +1,7 @@
 import pytest
 from fastapi.testclient import TestClient
 from fastapi import status, Depends
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, patch, MagicMock
 
 from backend.app.main import app
 from backend.app.models.user import User, UserUpdate
@@ -21,6 +21,11 @@ MOCK_USER = {
     "created_at": "2024-01-01T00:00:00Z",
     "updated_at": None,
 }
+
+@pytest.fixture(autouse=True)
+def patch_users_table():
+    with patch("backend.app.db.dynamodb.users_table", MagicMock()) as mock_table:
+        yield mock_table
 
 @pytest.fixture
 def override_get_current_user():
