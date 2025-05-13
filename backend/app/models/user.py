@@ -11,9 +11,9 @@ class UserBase(BaseModel):
 
 class UserUpdate(BaseModel):
     """User update model for partial updates."""
-    email: Optional[EmailStr] = None
+    # email: Optional[EmailStr] = None # Disable email update for now
     full_name: Optional[str] = None
-    is_active: Optional[bool] = None
+    # is_active: Optional[bool] = None # Disable active status update for now
 
 class UserCreate(UserBase):
     """User creation model."""
