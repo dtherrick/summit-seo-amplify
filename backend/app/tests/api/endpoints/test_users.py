@@ -2,6 +2,7 @@ import pytest
 from fastapi.testclient import TestClient
 from fastapi import status, Depends
 from unittest.mock import AsyncMock, patch, MagicMock
+from botocore.exceptions import ClientError
 
 from backend.app.main import app
 from backend.app.models.user import User, UserUpdate
@@ -24,7 +25,11 @@ MOCK_USER = {
 
 @pytest.fixture(autouse=True)
 def patch_users_table():
-    with patch("backend.app.db.dynamodb.users_table", MagicMock()) as mock_table:
+    with patch("backend.app.db.dynamodb.users_table", new_callable=MagicMock) as mock_table:
+        mock_table.query.return_value = {"Items": [MOCK_USER.copy()]}
+        mock_table.get_item.return_value = {"Item": MOCK_USER.copy()}
+        mock_table.update_item.return_value = {"Attributes": MOCK_USER.copy()}
+        mock_table.put_item.return_value = {}
         yield mock_table
 
 @pytest.fixture
@@ -35,54 +40,44 @@ def override_get_current_user():
     yield
     app.dependency_overrides.pop(users_endpoint.get_current_user, None)
 
-@patch("backend.app.db.dynamodb.get_user_by_cognito_id", new_callable=AsyncMock)
-def test_read_users_me_success(mock_get_user, override_get_current_user):
-    mock_get_user.return_value = MOCK_USER
+def test_read_users_me_success(patch_users_table, override_get_current_user):
     response = client.get("/api/v1/users/me")
     assert response.status_code == 200
     data = response.json()
     assert data["id"] == MOCK_USER["id"]
     assert data["email"] == MOCK_USER["email"]
 
-@patch("backend.app.db.dynamodb.get_user_by_cognito_id", new_callable=AsyncMock)
-def test_read_users_me_not_found(mock_get_user, override_get_current_user):
-    mock_get_user.return_value = None
+def test_read_users_me_not_found(patch_users_table, override_get_current_user):
+    patch_users_table.query.return_value = {"Items": []}
     response = client.get("/api/v1/users/me")
     assert response.status_code == 404
 
-@patch("backend.app.db.dynamodb.get_user_by_cognito_id", new_callable=AsyncMock)
-@patch("backend.app.db.dynamodb.update_user", new_callable=AsyncMock)
-def test_update_users_me_partial_update(mock_update_user, mock_get_user, override_get_current_user):
-    mock_get_user.return_value = MOCK_USER.copy()
-    updated = MOCK_USER.copy()
-    updated["full_name"] = "Jane Doe"
-    mock_update_user.return_value = updated
+def test_update_users_me_partial_update(patch_users_table, override_get_current_user):
+    patch_users_table.query.return_value = {"Items": [MOCK_USER.copy()]}
+    updated_user_data = MOCK_USER.copy()
+    updated_user_data["full_name"] = "Jane Doe"
+    patch_users_table.update_item.return_value = {"Attributes": updated_user_data}
     response = client.put("/api/v1/users/me", json={"full_name": "Jane Doe"})
     assert response.status_code == 200
     data = response.json()
     assert data["full_name"] == "Jane Doe"
     assert data["id"] == MOCK_USER["id"]
 
-@patch("backend.app.db.dynamodb.get_user_by_cognito_id", new_callable=AsyncMock)
-@patch("backend.app.db.dynamodb.update_user", new_callable=AsyncMock)
-def test_update_users_me_noop(mock_update_user, mock_get_user, override_get_current_user):
-    mock_get_user.return_value = MOCK_USER.copy()
+def test_update_users_me_noop(patch_users_table, override_get_current_user):
+    patch_users_table.query.return_value = {"Items": [MOCK_USER.copy()]}
     response = client.put("/api/v1/users/me", json={})
     assert response.status_code == 200
     data = response.json()
     assert data["id"] == MOCK_USER["id"]
-    mock_update_user.assert_not_called()
 
-@patch("backend.app.db.dynamodb.get_user_by_cognito_id", new_callable=AsyncMock)
-def test_update_users_me_not_found(mock_get_user, override_get_current_user):
-    mock_get_user.return_value = None
+def test_update_users_me_not_found(patch_users_table, override_get_current_user):
+    patch_users_table.query.return_value = {"Items": []}
     response = client.put("/api/v1/users/me", json={"full_name": "Jane Doe"})
     assert response.status_code == 404
 
-@patch("backend.app.db.dynamodb.get_user_by_cognito_id", new_callable=AsyncMock)
-@patch("backend.app.db.dynamodb.update_user", new_callable=AsyncMock)
-def test_update_users_me_dynamodb_error(mock_update_user, mock_get_user, override_get_current_user):
-    mock_get_user.return_value = MOCK_USER.copy()
-    mock_update_user.side_effect = Exception("DynamoDB error")
+def test_update_users_me_dynamodb_error(patch_users_table, override_get_current_user):
+    patch_users_table.query.return_value = {"Items": [MOCK_USER.copy()]}
+    mock_error_response = {'Error': {'Code': 'InternalServerError', 'Message': 'DynamoDB broke'}}
+    patch_users_table.update_item.side_effect = ClientError(mock_error_response, 'UpdateItem')
     response = client.put("/api/v1/users/me", json={"full_name": "Jane Doe"})
-    assert response.status_code == 500 or response.status_code == 422
+    assert response.status_code == 500
