@@ -65,7 +65,7 @@ jobs:
       - name: Test with pytest
         run: |
           source .venv/bin/activate # Activate the correct venv
-          pytest -v || [ $? -eq 5 ] # Allow exit code 5 (no tests found)
+          PYTHONPATH=$PWD pytest -v || [ $? -eq 5 ] # Allow exit code 5 (no tests found)
 
   deploy-cdk:
     name: Deploy CDK Stack
