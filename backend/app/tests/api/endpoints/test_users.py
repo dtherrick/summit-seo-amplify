@@ -25,14 +25,6 @@ MOCK_USER = {
 @pytest.fixture(autouse=True)
 def patch_users_table():
     with patch("backend.app.db.dynamodb.users_table", MagicMock()) as mock_table:
-        # For get_user_by_cognito_id (query)
-        mock_table.query.return_value = {"Items": [MOCK_USER]}
-        # For get_user (get_item)
-        mock_table.get_item.return_value = {"Item": MOCK_USER}
-        # For update_user (update_item)
-        mock_table.update_item.return_value = {"Attributes": MOCK_USER}
-        # For create_user (put_item)
-        mock_table.put_item.return_value = {}
         yield mock_table
 
 @pytest.fixture
