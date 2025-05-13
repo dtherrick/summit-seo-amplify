@@ -63,3 +63,19 @@ async def get_tenant(tenant_id: str) -> dict:
     except ClientError as e:
         logger.error(f"Error getting tenant: {e}")
         raise
+
+async def update_user(user_id: str, update_data: dict) -> dict:
+    """Update user fields in DynamoDB."""
+    try:
+        update_expression = "SET " + ", ".join(f"{k} = :{k}" for k in update_data.keys())
+        expression_attribute_values = {f":{k}": v for k, v in update_data.items()}
+        response = users_table.update_item(
+            Key={"id": user_id},
+            UpdateExpression=update_expression,
+            ExpressionAttributeValues=expression_attribute_values,
+            ReturnValues="ALL_NEW"
+        )
+        return response.get("Attributes")
+    except ClientError as e:
+        logger.error(f"Error updating user: {e}")
+        raise

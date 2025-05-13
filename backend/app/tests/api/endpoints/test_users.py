@@ -1,94 +1,83 @@
+import pytest
 from fastapi.testclient import TestClient
-from typing import Dict
+from fastapi import status, Depends
+from unittest.mock import AsyncMock, patch
 
-from backend.app.main import app  # Assuming your FastAPI app instance is here
-from backend.app.api.endpoints.users import UserResponse, UserUpdate # Import your Pydantic models
+from backend.app.main import app
+from backend.app.models.user import User, UserUpdate
+from backend.app.api.endpoints import users as users_endpoint
 
 client = TestClient(app)
 
-# Mock data that aligns with your get_current_user_mock and endpoint responses
-MOCK_COGNITO_SUB = "abcdef12-3456-7890-abcd-ef1234567890"
-MOCK_EMAIL = "testuser@example.com"
-
-DEFAULT_USER_PROFILE = {
-    "user_id": MOCK_COGNITO_SUB,
-    "email": MOCK_EMAIL,
-    "first_name": "John",
-    "last_name": "Doe",
+MOCK_USER = {
+    "id": "user-123",
+    "cognito_id": "cognito-abc",
+    "email": "testuser@example.com",
+    "full_name": "John Doe",
     "is_active": True,
-    "tenant_id": "mock-tenant-id",
+    "tenant_id": "tenant-xyz",
     "subscription_tier": "free",
-    "business_name": "MockBiz",
-    "business_website": "https://mock.biz",
-    "business_industry": "Tech",
-    "user_type": "user"
+    "user_type": "user",
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": None,
 }
 
-# Helper to get auth headers for a mock user
-# In a real scenario with actual auth, you might mock the dependency directly
-# or use a fixture that provides a valid token for a test user.
-# For now, since get_current_user_mock doesn't actually check a token,
-# we don't strictly need to pass auth headers for these mock tests to pass,
-# but it's good practice to think about it for when auth is real.
+@pytest.fixture
+def override_get_current_user():
+    async def _override():
+        return MOCK_USER
+    app.dependency_overrides[users_endpoint.get_current_user] = _override
+    yield
+    app.dependency_overrides.pop(users_endpoint.get_current_user, None)
 
-def get_mock_auth_headers() -> Dict[str, str]:
-    return {"Authorization": "Bearer mocktoken"}
-
-
-# Test for GET /api/v1/users/me
-def test_read_users_me():
-    response = client.get("/api/v1/users/me", headers=get_mock_auth_headers())
+@patch("backend.app.db.dynamodb.get_user_by_cognito_id", new_callable=AsyncMock)
+def test_read_users_me_success(mock_get_user, override_get_current_user):
+    mock_get_user.return_value = MOCK_USER
+    response = client.get("/api/v1/users/me")
     assert response.status_code == 200
     data = response.json()
-    assert data["user_id"] == MOCK_COGNITO_SUB
-    assert data["email"] == MOCK_EMAIL
-    # Validate against the full expected mock profile
-    for key, value in DEFAULT_USER_PROFILE.items():
-        assert data[key] == value
-    # Ensure it matches the UserResponse model structure (optional deep validation here)
-    UserResponse(**data) # This will raise an error if the structure is wrong
+    assert data["id"] == MOCK_USER["id"]
+    assert data["email"] == MOCK_USER["email"]
 
-# Tests for PUT /api/v1/users/me
-def test_update_users_me_full_update():
-    update_data = {
-        "first_name": "Jane",
-        "last_name": "Doer",
-        "business_name": "UpdatedBiz",
-        "business_website": "https://updated.biz",
-        "business_industry": "E-commerce"
-    }
-    response = client.put("/api/v1/users/me", json=update_data, headers=get_mock_auth_headers())
+@patch("backend.app.db.dynamodb.get_user_by_cognito_id", new_callable=AsyncMock)
+def test_read_users_me_not_found(mock_get_user, override_get_current_user):
+    mock_get_user.return_value = None
+    response = client.get("/api/v1/users/me")
+    assert response.status_code == 404
+
+@patch("backend.app.db.dynamodb.get_user_by_cognito_id", new_callable=AsyncMock)
+@patch("backend.app.db.dynamodb.update_user", new_callable=AsyncMock)
+def test_update_users_me_partial_update(mock_update_user, mock_get_user, override_get_current_user):
+    mock_get_user.return_value = MOCK_USER.copy()
+    updated = MOCK_USER.copy()
+    updated["full_name"] = "Jane Doe"
+    mock_update_user.return_value = updated
+    response = client.put("/api/v1/users/me", json={"full_name": "Jane Doe"})
     assert response.status_code == 200
     data = response.json()
-    assert data["first_name"] == update_data["first_name"]
-    assert data["last_name"] == update_data["last_name"]
-    assert data["business_name"] == update_data["business_name"]
-    assert data["business_website"] == update_data["business_website"]
-    assert data["business_industry"] == update_data["business_industry"]
-    # Check that other fields remain as per the mock logic in the endpoint
-    assert data["user_id"] == MOCK_COGNITO_SUB
-    assert data["email"] == MOCK_EMAIL
-    UserResponse(**data)
+    assert data["full_name"] == "Jane Doe"
+    assert data["id"] == MOCK_USER["id"]
 
-def test_update_users_me_partial_update():
-    update_data = {
-        "first_name": "Janey"
-    }
-    response = client.put("/api/v1/users/me", json=update_data, headers=get_mock_auth_headers())
+@patch("backend.app.db.dynamodb.get_user_by_cognito_id", new_callable=AsyncMock)
+@patch("backend.app.db.dynamodb.update_user", new_callable=AsyncMock)
+def test_update_users_me_noop(mock_update_user, mock_get_user, override_get_current_user):
+    mock_get_user.return_value = MOCK_USER.copy()
+    response = client.put("/api/v1/users/me", json={})
     assert response.status_code == 200
     data = response.json()
-    assert data["first_name"] == update_data["first_name"]
-    # Check that other fields remain as per the mock logic
-    assert data["last_name"] == DEFAULT_USER_PROFILE["last_name"] # From original mock
-    assert data["business_name"] == DEFAULT_USER_PROFILE["business_name"]
-    UserResponse(**data)
+    assert data["id"] == MOCK_USER["id"]
+    mock_update_user.assert_not_called()
 
-def test_update_users_me_empty_payload():
-    update_data = {}
-    response = client.put("/api/v1/users/me", json=update_data, headers=get_mock_auth_headers())
-    assert response.status_code == 200
-    data = response.json()
-    # Check that all fields remain as per the mock logic (original default values)
-    for key, value in DEFAULT_USER_PROFILE.items():
-        assert data[key] == value
-    UserResponse(**data)
+@patch("backend.app.db.dynamodb.get_user_by_cognito_id", new_callable=AsyncMock)
+def test_update_users_me_not_found(mock_get_user, override_get_current_user):
+    mock_get_user.return_value = None
+    response = client.put("/api/v1/users/me", json={"full_name": "Jane Doe"})
+    assert response.status_code == 404
+
+@patch("backend.app.db.dynamodb.get_user_by_cognito_id", new_callable=AsyncMock)
+@patch("backend.app.db.dynamodb.update_user", new_callable=AsyncMock)
+def test_update_users_me_dynamodb_error(mock_update_user, mock_get_user, override_get_current_user):
+    mock_get_user.return_value = MOCK_USER.copy()
+    mock_update_user.side_effect = Exception("DynamoDB error")
+    response = client.put("/api/v1/users/me", json={"full_name": "Jane Doe"})
+    assert response.status_code == 500 or response.status_code == 422

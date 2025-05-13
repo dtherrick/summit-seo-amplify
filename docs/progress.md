@@ -32,8 +32,6 @@
 - [x] Test authentication flows end-to-end
 - [x] Implement Cognito post-confirmation trigger for user data persistence
 
-## Next Steps
-
 ### Day 4: User Profile & Backend Integration ✅
 - [x] Implement backend user profile creation (Cognito trigger)
 - [x] Set up API Gateway and basic Lambda integration (including resolving public `/` and `/health` endpoint issues)
@@ -93,3 +91,11 @@
   - business_website: Primary website URL for SEO analysis
   - business_industry: Business industry for targeted recommendations
   - user_type: Defines user role (user, admin)
+
+### Progress on Day 4 (Backend User Profile Integration)
+
+- Refactored backend user profile endpoints (`GET /me`, `PUT /me`) to use real Cognito authentication and DynamoDB access.
+- Implemented partial update support for user profiles in DynamoDB (no longer overwrites the entire record).
+- Ensured endpoints use strict typing and error handling.
+- Confirmed tenant info endpoint (`/tenants/me`) works for current user.
+- Next: Add/expand unit tests for user/tenant profile flows, then proceed to frontend integration.
