@@ -6,6 +6,7 @@ anyio==4.9.0
     # via
     #   httpx
     #   starlette
+    #   watchfiles
 boto3==1.38.12
     # via -r backend/requirements.txt
 botocore==1.38.12
@@ -17,23 +18,36 @@ certifi==2025.4.26
     #   httpcore
     #   httpx
 click==8.1.8
-    # via uvicorn
+    # via
+    #   rich-toolkit
+    #   typer
+    #   uvicorn
+coverage==7.8.0
+    # via pytest-cov
 dnspython==2.7.0
     # via email-validator
 ecdsa==0.19.1
     # via python-jose
 email-validator==2.2.0
-    # via -r backend/requirements.txt
+    # via
+    #   -r backend/requirements.txt
+    #   fastapi
 fastapi==0.115.12
     # via -r backend/requirements.txt
+fastapi-cli==0.0.7
+    # via fastapi
 h11==0.16.0
     # via
     #   httpcore
     #   uvicorn
 httpcore==1.0.9
     # via httpx
+httptools==0.6.4
+    # via uvicorn
 httpx==0.28.1
-    # via -r backend/requirements.txt
+    # via
+    #   -r backend/requirements.txt
+    #   fastapi
 idna==3.10
     # via
     #   anyio
@@ -41,12 +55,24 @@ idna==3.10
     #   httpx
 iniconfig==2.1.0
     # via pytest
+itsdangerous==2.2.0
+    # via fastapi
+jinja2==3.1.6
+    # via fastapi
 jmespath==1.0.1
     # via
     #   boto3
     #   botocore
 mangum==0.19.0
     # via -r backend/requirements.txt
+markdown-it-py==3.0.0
+    # via rich
+markupsafe==3.0.2
+    # via jinja2
+mdurl==0.1.2
+    # via markdown-it-py
+orjson==3.10.18
+    # via fastapi
 packaging==25.0
     # via pytest
 pluggy==1.5.0
@@ -59,25 +85,58 @@ pydantic==2.11.4
     # via
     #   -r backend/requirements.txt
     #   fastapi
+    #   pydantic-extra-types
     #   pydantic-settings
 pydantic-core==2.33.2
     # via pydantic
+pydantic-extra-types==2.10.4
+    # via fastapi
 pydantic-settings==2.9.1
-    # via -r backend/requirements.txt
+    # via
+    #   -r backend/requirements.txt
+    #   fastapi
+pygments==2.19.1
+    # via rich
 pytest==8.3.5
+    # via
+    #   -r backend/requirements.txt
+    #   pytest-asyncio
+    #   pytest-cov
+    #   pytest-mock
+pytest-asyncio==0.26.0
+    # via -r backend/requirements.txt
+pytest-cov==6.1.1
+    # via -r backend/requirements.txt
+pytest-mock==3.14.0
     # via -r backend/requirements.txt
 python-dateutil==2.9.0.post0
     # via botocore
 python-dotenv==1.1.0
-    # via pydantic-settings
+    # via
+    #   pydantic-settings
+    #   uvicorn
 python-jose==3.4.0
     # via -r backend/requirements.txt
+python-multipart==0.0.20
+    # via fastapi
+pyyaml==6.0.2
+    # via
+    #   fastapi
+    #   uvicorn
+rich==14.0.0
+    # via
+    #   rich-toolkit
+    #   typer
+rich-toolkit==0.14.6
+    # via fastapi-cli
 rsa==4.9.1
     # via python-jose
 ruff==0.11.9
     # via -r backend/requirements.txt
 s3transfer==0.12.0
     # via boto3
+shellingham==1.5.4
+    # via typer
 six==1.17.0
     # via
     #   ecdsa
@@ -86,18 +145,34 @@ sniffio==1.3.1
     # via anyio
 starlette==0.46.2
     # via fastapi
+typer==0.15.3
+    # via fastapi-cli
 typing-extensions==4.13.2
     # via
     #   fastapi
     #   mangum
     #   pydantic
     #   pydantic-core
+    #   pydantic-extra-types
+    #   rich-toolkit
+    #   typer
     #   typing-inspection
 typing-inspection==0.4.0
     # via
     #   pydantic
     #   pydantic-settings
+ujson==5.10.0
+    # via fastapi
 urllib3==2.4.0
     # via botocore
 uvicorn==0.34.2
-    # via -r backend/requirements.txt
+    # via
+    #   -r backend/requirements.txt
+    #   fastapi
+    #   fastapi-cli
+uvloop==0.21.0
+    # via uvicorn
+watchfiles==1.0.5
+    # via uvicorn
+websockets==15.0.1
+    # via uvicorn
