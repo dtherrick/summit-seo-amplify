@@ -9,12 +9,14 @@ frontend:
   phases:
     build:
       commands:
+        - cd frontend
+        - npm ci
         - npm run build
   artifacts:
-    baseDirectory: dist
+    baseDirectory: frontend/dist
     files:
       - '**/*'
   cache:
     paths:
       - .npm/**/*
-      - node_modules/**/*
+      - frontend/node_modules/**/*

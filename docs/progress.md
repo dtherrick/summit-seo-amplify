@@ -32,12 +32,21 @@
 - [x] Test authentication flows end-to-end
 - [x] Implement Cognito post-confirmation trigger for user data persistence
 
-### Day 4: User Profile & Backend Integration ✅
+### Day 4: User Profile & Backend Integration ✅ (Backend complete)
 - [x] Implement backend user profile creation (Cognito trigger)
 - [x] Set up API Gateway and basic Lambda integration (including resolving public `/` and `/health` endpoint issues)
-- [ ] Create DynamoDB access patterns for user/tenant data
-- [ ] Implement secure API endpoints for user profiles
+- [x] Create DynamoDB access patterns for user/tenant data (Reviewed and confirmed)
+- [x] Implement secure API endpoints for user profiles (GET /me, PUT /me implemented and tested)
 - [ ] Connect frontend to backend user profile APIs
+
+### Day 4.5: Frontend Refactoring ✅
+
+- [x] Create `frontend` directory and move all frontend-related source code, assets, and configuration files (`src/`, `public/`, `index.html`, `package.json`, `vite.config.ts`, `tsconfig.json`, `package-lock.json`, `.eslintrc.cjs`) into it.
+- [x] Update `frontend/tsconfig.json` to adjust `references` path for `tsconfig.node.json`.
+- [x] Modify `amplify.yml` to `cd frontend` for build commands, update `baseDirectory` for artifacts to `frontend/dist`, and adjust `node_modules` cache path.
+- [x] Update `.gitignore` to reflect new paths for `frontend/node_modules/`, `frontend/dist/`, etc.
+- [x] Adjust `include` path in `tsconfig.node.json` to point to `frontend/vite.config.ts`.
+- [x] Correct the import path for `amplify_outputs.json` in `frontend/src/main.tsx` to `../../amplify_outputs.json`.
 
 ## Notes
 
@@ -94,8 +103,15 @@
 
 ### Progress on Day 4 (Backend User Profile Integration)
 
-- Refactored backend user profile endpoints (`GET /me`, `PUT /me`) to use real Cognito authentication and DynamoDB access.
-- Implemented partial update support for user profiles in DynamoDB (no longer overwrites the entire record).
-- Ensured endpoints use strict typing and error handling.
-- Confirmed tenant info endpoint (`/tenants/me`) works for current user.
-- Next: Add/expand unit tests for user/tenant profile flows, then proceed to frontend integration.
+- Implemented `PUT /users/me` endpoint for user profile updates (currently `full_name` only).
+- Added comprehensive unit tests for the `PUT /users/me` endpoint, including input validation and error handling.
+- Confirmed all backend tests for user profile functionality are passing.
+- Reviewed and confirmed DynamoDB access patterns for user and tenant data in `backend/app/db/dynamodb.py`.
+- Verified security of user profile endpoints (`GET /me`, `PUT /me`) using Cognito authentication.
+- Next: Connect frontend to backend user profile APIs.
+
+### Frontend Refactoring (Day 4.5)
+- Successfully refactored the frontend codebase into a dedicated `frontend/` directory.
+- All relevant configuration files (`package.json`, `vite.config.ts`, `tsconfig.json`, `amplify.yml`, `.gitignore`, `tsconfig.node.json`) have been updated to reflect the new structure.
+- Build processes and import paths within the frontend source have been adjusted.
+- This provides a cleaner project structure for ongoing frontend development.

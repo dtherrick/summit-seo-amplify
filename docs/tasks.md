@@ -45,11 +45,23 @@ The project foundation has already been established with:
 
 - [x] Implement backend user profile creation (Cognito trigger)
 - [x] Set up API Gateway and basic Lambda integration
-- [ ] Create DynamoDB access patterns for user/tenant data
-- [ ] Implement secure API endpoints for user profiles
+- [x] Create DynamoDB access patterns for user/tenant data
+- [x] Implement secure API endpoints for user profiles
 - [ ] Connect frontend to backend user profile APIs
 
 **Milestone:** User signup creates DynamoDB records, API Gateway and Lambda functioning
+
+### Day 4.5: Frontend Refactoring ✅
+
+- [x] Create `frontend` directory
+- [x] Move frontend source (`src`), `public`, `index.html`, `package.json`, `vite.config.ts`, `tsconfig.json`, `package-lock.json`, `.eslintrc.cjs` into `frontend` directory
+- [x] Update paths in `frontend/tsconfig.json` (relative to its new location)
+- [x] Update paths and commands in `amplify.yml` (build commands, artifact locations, cache paths)
+- [x] Update paths in `.gitignore` (e.g., `node_modules`, `dist`)
+- [x] Update paths in `tsconfig.node.json` (to `frontend/vite.config.ts`)
+- [x] Correct import paths in frontend source code (e.g., for `amplify_outputs.json` in `main.tsx`)
+
+**Milestone:** ✅ Frontend codebase successfully refactored into a dedicated `frontend` directory with updated configurations.
 
 ### Day 5: Initial Survey UI
 

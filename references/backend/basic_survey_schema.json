@@ -1,0 +1,178 @@
+{
+    "sections": [
+        {
+            "name": "General Information",
+            "fields": [
+                {
+                    "name": "Brand Name",
+                    "type": "text",
+                    "metadata": {
+                        "description": "The name of your brand"
+                    },
+                    "required": true
+                },
+                {
+                    "name": "Brand Description",
+                    "type": "textarea",
+                    "metadata": {
+                        "description": "A short description of your brand"
+                    },
+                    "required": true
+                },
+                {
+                    "name": "URL",
+                    "type": "url",
+                    "metadata": {
+                        "description": "The URL of your brand"
+                    },
+                    "required": true
+                },  
+                {
+                    "name": "Categories",
+                    "type": "multiselect",
+                    "options": [
+                        "Fashion",
+                        "Technology",
+                        "Health & Wellness",
+                        "Food & Beverage",
+                        "Travel",
+                        "Home & Garden",
+                        "Education",
+                        "Finance",  
+                        "Entertainment",
+                        "Automotive"
+                    ],
+                    "metadata": {
+                        "description": "The categories of your brand"
+                    },
+                    "required": true
+                }
+            ]
+        },
+
+        {
+            "name": "Audience",
+            "fields": [
+                {
+                    "name": "Who is your audience?",
+                    "type": "textarea",
+                    "metadata": {
+                        "description": "Who is your audience?"
+                    },
+                    "required": true
+                },
+                {
+                    "name": "What are their needs or preferences that help them buy from you?",
+                    "type": "textarea",
+                    "metadata": {
+                        "description": "What are their needs or preferences that help them buy from you?"
+                    },
+                    "required": true
+                }
+            ]
+        },
+
+        {
+            "name": "SEO",
+            "fields": [
+                {
+                    "name": "Seed Keywords",
+                    "type": "text",
+                    "metadata": {
+                        "description": "Seed keyword are the keywords that are most relevant to your brand and audience. They are the keywords that you want to rank for in search engines."
+                    },
+                    "required": true
+                },
+                {
+                    "name": "Pillar Keywords",
+                    "type": "text",
+                    "metadata": {
+                        "description": "Pillar keywords break out into four categories: informational, commercial, transactional, and brand. Please provide a list of pillar keywords for each category."
+                    },
+                    "required": true,
+                    "categories": [
+                        {
+                            "name": "Informational Intent",
+                            "type": "text",
+                            "metadata": {
+                                "description": "Customers searching for information about your category (not necessarily your brand), and not necessarily looking to buy, use these keywords."
+                            },
+                            "required": true
+                        },
+                        {
+                            "name": "Commercial Intent",
+                            "type": "text",
+                            "metadata": {
+                                "description": "Customers searching for specific products or services, and are ready to buy. Use these keywords to target customers who are ready to buy."
+                            },
+                            "required": true
+                        },
+                        {
+                            "name": "Transactional Intent",
+                            "type": "text",
+                            "metadata": {
+                                "description": "Customers searching for YOUR specific brand, product, or service - and are ready to buy. Use these keywords to target customers who are looking for your brand."
+                            },
+                            "required": true
+                        },
+                        {
+                            "name": "Brand Intent",
+                            "type": "text",
+                            "metadata": {
+                                "description": "Customers searching for your brand name. Use these keywords to target customers who are looking for your brand."
+                            },
+                            "required": true
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Competitors",
+            "fields": [
+                {
+                    "name": "Key Competitors",
+                    "type": "textarea",
+                    "metadata": {
+                        "description": "Please provide a list of key competitors. These are brands that are similar to yours and compete for the same audience."
+                    },
+                    "required": true
+                },
+                {
+                    "name": "Secondary Competitors",
+                    "type": "textarea",
+                    "metadata": {
+                        "description": "Please provide a list of secondary competitors. These are brands that are similar to yours but not direct competitors."
+                    },
+                    "required": true
+                },
+            ]
+        },
+        {
+            "name": "Guardrails",
+            "fields": [
+                {
+                    "name": "Guardrails",
+                    "type": "textarea",
+                    "metadata": {
+                        "description": "Are there any specific areas or topics you do not want content generated about?"
+                    },
+                    "required": true
+                }
+            ]
+        },
+        {
+            "name": "Content Pillars",
+            "fields": [
+                {
+                    "name": "Content Pillars",
+                    "type": "textarea",
+                    "metadata": {
+                        "description": "Please provide key themes that we can use to shape messaging and generate content that resonates with your audience."
+                    },
+                    "required": true
+                }
+            ]
+        }
+    ]
+}
