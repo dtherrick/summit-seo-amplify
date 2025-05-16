@@ -28,3 +28,6 @@ frontend/*.local
 amplify_outputs*
 amplifyconfiguration*
 node_modules
+
+# docs stuff
+docs/BUILD.txt
