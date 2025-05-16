@@ -3,6 +3,7 @@ import type { Schema } from "../amplify/data/resource";
 import { generateClient } from "aws-amplify/data";
 import { Authenticator, useAuthenticator, Button, Heading } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
+import UserProfile from './UserProfile';
 
 const client = generateClient<Schema>();
 
@@ -13,6 +14,7 @@ const AppContent = () => {
     <div>
       <Heading level={1}>Hello {user?.signInDetails?.loginId || user?.username || 'User'}</Heading>
       {/* Your protected app content here */}
+      <UserProfile />
       <Button onClick={signOut}>Sign Out</Button>
     </div>
   );

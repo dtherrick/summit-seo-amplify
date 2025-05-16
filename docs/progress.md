@@ -37,7 +37,7 @@
 - [x] Set up API Gateway and basic Lambda integration (including resolving public `/` and `/health` endpoint issues)
 - [x] Create DynamoDB access patterns for user/tenant data (Reviewed and confirmed)
 - [x] Implement secure API endpoints for user profiles (GET /me, PUT /me implemented and tested)
-- [ ] Connect frontend to backend user profile APIs
+- [x] Connect frontend to backend user profile APIs
 
 ### Day 4.5: Frontend Refactoring ✅
 
