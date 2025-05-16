@@ -32,9 +32,16 @@ const UserProfile: React.FC = () => {
           path: '/users/me',
         });
         const { body } = await restOperation.response;
-        const data = await body.json();
-        setProfile(data);
-        setEditFullName(data.full_name || '');
+        const responseData = await body.json() as unknown as UserProfileData;
+
+        if (responseData) {
+          setProfile(responseData);
+          setEditFullName(responseData.full_name || '');
+        } else {
+          console.error('Received null or undefined profile data from API');
+          setError('Profile data is missing or invalid.');
+          setProfile(null);
+        }
       } catch (err: any) {
         console.error('Error fetching user profile:', err);
         setError('Failed to fetch user profile. Please try again later.');

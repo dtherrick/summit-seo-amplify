@@ -127,3 +127,8 @@
 - All relevant configuration files (`package.json`, `vite.config.ts`, `tsconfig.json`, `amplify.yml`, `.gitignore`, `tsconfig.node.json`) have been updated to reflect the new structure.
 - Build processes and import paths within the frontend source have been adjusted.
 - This provides a cleaner project structure for ongoing frontend development.
+
+- Changed `npm ci` to `npm install` in `amplify.yml` for the frontend build to potentially resolve package-lock.json sync issues.
+- Addressed `npm run build` failures:
+  - Created `frontend/src/amplify-outputs.d.ts` to fix `Cannot find module '../../amplify_outputs.json'` in `main.tsx`.
+  - Corrected type assertions and handling for API response in `frontend/src/UserProfile.tsx` to resolve TypeScript errors (TS2345, TS18047, TS2339).
