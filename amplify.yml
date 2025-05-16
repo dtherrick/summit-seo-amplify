@@ -7,6 +7,12 @@ version: 1
 #         - npx ampx pipeline-deploy --branch $AWS_BRANCH --app-id $AWS_APP_ID
 frontend:
   phases:
+    preBuild:
+      commands:
+        - nvm install 20
+        - nvm use 20
+        - node -v # Output Node version to confirm
+        - npm --version # Output npm version to confirm
     build:
       commands:
         - cd frontend

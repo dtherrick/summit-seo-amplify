@@ -55,6 +55,9 @@
 - Identified that `npm ci` in the `backend` build phase of `amplify.yml` (running at project root) is the likely cause.
 - Modified `amplify.yml` to comment out the root `npm ci` command in the backend build phase.
 - User confirmed backend is managed via CDK/GitHub Actions; entire `backend` build phase in `amplify.yml` commented out.
+- Frontend build failing due to Node version mismatch (Amplify using 18.x, deps need 20/22+) and out-of-sync package-lock.json.
+- Updated `amplify.yml` to use Node 20 via nvm in `preBuild` phase.
+- Advised user to regenerate `frontend/package-lock.json` locally using Node 20 and commit.
 
 ## Notes
 
