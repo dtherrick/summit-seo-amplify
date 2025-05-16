@@ -48,6 +48,14 @@
 - [x] Adjust `include` path in `tsconfig.node.json` to point to `frontend/vite.config.ts`.
 - [x] Correct the import path for `amplify_outputs.json` in `frontend/src/main.tsx` to `../../amplify_outputs.json`.
 
+### Day 4.6: Amplify Build Debugging (In Progress)
+- Investigating Amplify build failure after frontend refactor.
+- Initial error points to `npm ci` failing due to missing `package-lock.json`.
+- Ensured `frontend/package-lock.json` is committed.
+- Identified that `npm ci` in the `backend` build phase of `amplify.yml` (running at project root) is the likely cause.
+- Modified `amplify.yml` to comment out the root `npm ci` command in the backend build phase.
+- User confirmed backend is managed via CDK/GitHub Actions; entire `backend` build phase in `amplify.yml` commented out.
+
 ## Notes
 
 ### Progress on Day 2 (Current)
