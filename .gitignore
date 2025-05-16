@@ -25,7 +25,6 @@ frontend/*.local
 
 # amplify
 .amplify
-amplify_outputs*
 amplifyconfiguration*
 node_modules
 

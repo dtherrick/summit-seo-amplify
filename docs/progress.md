@@ -132,3 +132,10 @@
 - Addressed `npm run build` failures:
   - Created `frontend/src/amplify-outputs.d.ts` to fix `Cannot find module '../../amplify_outputs.json'` in `main.tsx`.
   - Corrected type assertions and handling for API response in `frontend/src/UserProfile.tsx` to resolve TypeScript errors (TS2345, TS18047, TS2339).
+
+- Addressed `npm run build` failures:
+  - Resolved `Cannot find module '../../amplify_outputs.json'` error by:
+    - Removing `amplify_outputs*` from `.gitignore`.
+    - Ensuring `amplify_outputs.json` is tracked by Git.
+    - (Previously created `frontend/src/amplify-outputs.d.ts` for type safety).
+  - Corrected type assertions and handling for API response in `frontend/src/UserProfile.tsx` to resolve TypeScript errors (TS2345, TS18047, TS2339).
