@@ -58,6 +58,7 @@
 - Frontend build failing due to Node version mismatch (Amplify using 18.x, deps need 20/22+) and out-of-sync package-lock.json.
 - Updated `amplify.yml` to use Node 20 via nvm in `preBuild` phase.
 - Advised user to regenerate `frontend/package-lock.json` locally using Node 20 and commit.
+- Changed `npm ci` to `npm install` in `amplify.yml` for the frontend build to potentially resolve package-lock.json sync issues.
 
 ## Notes
 
