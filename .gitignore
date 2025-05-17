@@ -30,3 +30,6 @@ node_modules
 
 # docs stuff
 docs/BUILD.txt
+
+# references
+references/*
