@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main # Or your primary development branch for deployments
-      - feature-dynamodb-access-patterns # Or any other branch you want to run tests/linting on
+      - connect-frontend-backend-user-apis # Or any other branch you want to run tests/linting on
     paths: # Trigger only if backend or CDK code changes
       - 'backend/**'
       - 'infrastructure/**'
