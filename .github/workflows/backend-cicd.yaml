@@ -72,7 +72,7 @@ jobs:
     name: Deploy CDK Stack
     needs: test-and-lint-backend # Run only if tests and linting pass
     # Deploy only on push to your main deployment branch (e.g., 'main')
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/aws-setup')
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/connect-frontend-backend-user-apis')
     runs-on: ubuntu-latest
     defaults:
       run:
