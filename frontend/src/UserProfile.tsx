@@ -28,8 +28,8 @@ const UserProfile: React.FC = () => {
       setSaveError(null);
       try {
         const restOperation = get({
-          apiName: 'SummitSEOAmplifyAPI', // Replace with your actual API name configured in Amplify
-          path: '/users/me',
+          apiName: 'SummitSEOAmplifyAPI',
+          path: 'users/me',
         });
         const { body } = await restOperation.response;
         const responseData = await body.json() as unknown as UserProfileData;
@@ -60,8 +60,8 @@ const UserProfile: React.FC = () => {
     setSaveError(null);
     try {
       const restOperation = put({
-        apiName: 'SummitSEOAmplifyAPI', // Replace with your actual API name
-        path: '/users/me',
+        apiName: 'SummitSEOAmplifyAPI',
+        path: 'users/me',
         options: {
           body: {
             full_name: editFullName,

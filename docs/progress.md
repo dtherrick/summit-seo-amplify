@@ -133,9 +133,9 @@
   - Created `frontend/src/amplify-outputs.d.ts` to fix `Cannot find module '../../amplify_outputs.json'` in `main.tsx`.
   - Corrected type assertions and handling for API response in `frontend/src/UserProfile.tsx` to resolve TypeScript errors (TS2345, TS18047, TS2339).
 
-- Addressed `npm run build` failures:
-  - Resolved `Cannot find module '../../amplify_outputs.json'` error by:
-    - Removing `amplify_outputs*` from `.gitignore`.
-    - Ensuring `amplify_outputs.json` is tracked by Git.
-    - (Previously created `frontend/src/amplify-outputs.d.ts` for type safety).
-  - Corrected type assertions and handling for API response in `frontend/src/UserProfile.tsx` to resolve TypeScript errors (TS2345, TS18047, TS2339).
+- Investigating `InvalidApiName` error despite matching API name in `UserProfile.tsx` and `amplify_outputs.json`.
+  - Cleaned up placeholder comments in `UserProfile.tsx`.
+- Identified that `Amplify.configure` was not registering the API configuration from `amplify_outputs.json`.
+  - Modified `main.tsx` to call `Amplify.configure({ ...outputs })` to ensure proper registration.
+- `Amplify.configure({ ...outputs })` still failed to register API config.
+  - Updated `main.tsx` to manually parse `outputs.api.plugins.awsAPIPlugin` and construct the `API.REST` configuration for `Amplify.configure`.
