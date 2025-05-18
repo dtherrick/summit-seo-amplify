@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { get, put } from 'aws-amplify/api';
+import { getCurrentUser, fetchAuthSession } from 'aws-amplify/auth';
 import { TextField, Button, Heading, View, Card, Flex, Text, Alert } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
+import { get, put } from 'aws-amplify/api';
 
 interface UserProfileData {
   user_id: string;
@@ -26,13 +27,56 @@ const UserProfile: React.FC = () => {
       setError(null);
       setSaveSuccess(false);
       setSaveError(null);
+
+      let authToken = '';
+
       try {
-        const restOperation = get({
+        // Fetch auth session to ensure we have valid tokens
+        const session = await fetchAuthSession();
+        console.log('Current user session:', session);
+
+        // Check if token is available and log it for debugging
+        if (session.tokens) {
+          const idToken = session.tokens.idToken;
+          const accessToken = session.tokens.accessToken;
+          console.log('ID Token available:', !!idToken);
+          console.log('Access Token available:', !!accessToken);
+
+          // Store the ID token for use in the API call
+          if (idToken) {
+            authToken = idToken.toString();
+            console.log('ID Token prefix:', authToken.substring(0, 20) + '...');
+          }
+        }
+
+        const user = await getCurrentUser();
+        console.log('Current authenticated user:', user);
+
+      } catch (err) {
+        console.error('Error fetching current auth status:', err);
+      }
+
+      try {
+        // Path should be relative to the configured endpoint (e.g., "users/me")
+        const path = 'users/me'; // No leading slash
+        console.log('Making API GET request to path:', path);
+
+        // Call the API using get method from Amplify v6 with manual authorization
+        const { body } = await get({
           apiName: 'SummitSEOAmplifyAPI',
-          path: 'users/me',
-        });
-        const { body } = await restOperation.response;
-        const responseData = await body.json() as unknown as UserProfileData;
+          path: path,
+          options: {
+            headers: {
+              Authorization: authToken ? `Bearer ${authToken}` : ''
+            }
+          }
+        }).response;
+
+        const json = await body.json();
+        console.log('API response:', json);
+
+        // Proper type conversion using unknown as intermediate type
+        const responseData = json as unknown as UserProfileData;
 
         if (responseData) {
           setProfile(responseData);
@@ -44,7 +88,7 @@ const UserProfile: React.FC = () => {
         }
       } catch (err: any) {
         console.error('Error fetching user profile:', err);
-        setError('Failed to fetch user profile. Please try again later.');
+        setError(`Failed to fetch user profile: ${err.message || 'Unknown error'}`);
       } finally {
         setIsLoading(false);
       }
@@ -58,22 +102,47 @@ const UserProfile: React.FC = () => {
     setIsSaving(true);
     setSaveSuccess(false);
     setSaveError(null);
+
+    let authToken = '';
+
     try {
-      const restOperation = put({
+      // Get auth token for API call
+      const session = await fetchAuthSession();
+      if (session.tokens?.idToken) {
+        authToken = session.tokens.idToken.toString();
+      }
+    } catch (err) {
+      console.error('Error getting auth token:', err);
+    }
+
+    try {
+      // Path should be relative to the configured endpoint (e.g., "users/me")
+      const path = 'users/me'; // No leading slash
+      console.log('Making API PUT request to path:', path);
+
+      // Call the API using put method from Amplify v6 with manual authorization
+      const { body } = await put({
         apiName: 'SummitSEOAmplifyAPI',
-        path: 'users/me',
+        path: path,
         options: {
+          headers: {
+            Authorization: authToken ? `Bearer ${authToken}` : ''
+          },
           body: {
             full_name: editFullName,
           },
         },
-      });
-      await restOperation.response;
+      }).response;
+
+      // If needed, parse response
+      const result = await body.json();
+      console.log('Update response:', result);
+
       setProfile({ ...profile, full_name: editFullName });
       setSaveSuccess(true);
     } catch (err: any) {
       console.error('Error saving user profile:', err);
-      const errorMessage = err.response?.data?.detail || 'Failed to save profile. Please try again.';
+      const errorMessage = err.message || 'Failed to save profile. Please try again.';
       setSaveError(errorMessage);
     } finally {
       setIsSaving(false);
