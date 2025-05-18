@@ -70,8 +70,8 @@ async def verify_cognito_token(token: str) -> Optional[Dict[str, Any]]:
             return None
 
         # Verify the audience (client ID)
-        if claims['client_id'] != settings.COGNITO_APP_CLIENT_ID:
-            logger.error(f"Token was not issued for this client id: {claims['client_id']}")
+        if claims['aud'] != settings.COGNITO_APP_CLIENT_ID:
+            logger.error(f"Token was not issued for this client id: {claims['aud']}")
             return None
 
         return claims

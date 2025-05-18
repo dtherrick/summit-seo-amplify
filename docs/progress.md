@@ -60,6 +60,15 @@
 - Advised user to regenerate `frontend/package-lock.json` locally using Node 20 and commit.
 - Changed `npm ci` to `npm install` in `amplify.yml` for the frontend build to potentially resolve package-lock.json sync issues.
 
+### Day 4.7: API Gateway/Lambda Auth Debugging (Current)
+- Investigated 401 Unauthorized error from API Gateway.
+- Curl output and API Gateway logs indicated the 401 was returned by the Lambda integration, not API Gateway itself.
+- Decoded JWT showed `token_use: "id"` and `aud` claim matching `COGNITO_APP_CLIENT_ID`.
+- CloudWatch logs from Lambda showed "error verifying token: 'client_id'".
+- Identified that `backend/app/utils/cognito.py` was incorrectly checking `claims['client_id']` instead of `claims['aud']` for ID tokens.
+- Updated `backend/app/utils/cognito.py` to use `claims['aud']`.
+- Advised user to confirm `COGNITO_APP_CLIENT_ID` environment variable in Lambda is set to `4s0peq2cv7vuuvq00frkrt13hb`.
+
 ## Notes
 
 ### Progress on Day 2 (Current)
