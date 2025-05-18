@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getCurrentUser, fetchAuthSession } from 'aws-amplify/auth';
+import { fetchAuthSession } from 'aws-amplify/auth';
 import { TextField, Button, Heading, View, Card, Flex, Text, Alert } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
 import { get, put } from 'aws-amplify/api';
@@ -32,7 +32,7 @@ const UserProfile: React.FC = () => {
         // console.log('Current user session:', session);
 
         const idToken = session.tokens?.idToken;
-        const accessToken = session.tokens?.accessToken;
+        // const accessToken = session.tokens?.accessToken; // Removed unused accessToken
 
         // console.log('ID Token available:', !!idToken);
         // console.log('Access Token available:', !!accessToken);
@@ -137,7 +137,7 @@ const UserProfile: React.FC = () => {
       }).response;
 
       // If needed, parse response
-      const result = await body.json();
+      await body.json(); // Removed assignment to unused 'result'
       // console.log('Update response:', result);
 
       setProfile({ ...profile, full_name: editFullName });
