@@ -24,42 +24,43 @@ const UserProfile: React.FC = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       setIsLoading(true);
-      setError(null);
-      setSaveSuccess(false);
-      setSaveError(null);
+      // console.log('Fetching profile...'); // Example of a potentially useful log to keep if desired
 
       let authToken = '';
-
       try {
-        // Fetch auth session to ensure we have valid tokens
         const session = await fetchAuthSession();
-        console.log('Current user session:', session);
+        // console.log('Current user session:', session);
 
-        // Check if token is available and log it for debugging
-        if (session.tokens) {
-          const idToken = session.tokens.idToken;
-          const accessToken = session.tokens.accessToken;
-          console.log('ID Token available:', !!idToken);
-          console.log('Access Token available:', !!accessToken);
+        const idToken = session.tokens?.idToken;
+        const accessToken = session.tokens?.accessToken;
 
-          // Store the ID token for use in the API call
-          if (idToken) {
-            authToken = idToken.toString();
-            console.log('ID Token prefix:', authToken.substring(0, 20) + '...');
-          }
+        // console.log('ID Token available:', !!idToken);
+        // console.log('Access Token available:', !!accessToken);
+
+        if (idToken) {
+          authToken = idToken.toString();
+          // console.log('ID Token prefix:', authToken.substring(0, 20) + '...');
+        } else {
+          console.error('ID token is undefined. Cannot make authenticated API call.');
+          setError('Authentication token is missing. Please try logging out and back in.');
+          setIsLoading(false);
+          return;
         }
-
-        const user = await getCurrentUser();
-        console.log('Current authenticated user:', user);
+        // Optional: log current authenticated user from Amplify
+        // const user = await getCurrentUser();
+        // console.log('Current authenticated user:', user);
 
       } catch (err) {
-        console.error('Error fetching current auth status:', err);
+        console.error('Error fetching auth session:', err);
+        setError('Failed to fetch authentication session. Please try logging out and back in.');
+        setIsLoading(false);
+        return;
       }
 
       try {
         // Path should be relative to the configured endpoint (e.g., "users/me")
         const path = 'users/me'; // No leading slash
-        console.log('Making API GET request to path:', path);
+        // console.log('Making API GET request to path:', path);
 
         // Call the API using get method from Amplify v6 with manual authorization
         const { body } = await get({
@@ -73,7 +74,7 @@ const UserProfile: React.FC = () => {
         }).response;
 
         const json = await body.json();
-        console.log('API response:', json);
+        // console.log('API response:', json);
 
         // Proper type conversion using unknown as intermediate type
         const responseData = json as unknown as UserProfileData;
@@ -102,6 +103,7 @@ const UserProfile: React.FC = () => {
     setIsSaving(true);
     setSaveSuccess(false);
     setSaveError(null);
+    // console.log('Saving profile with full_name:', editFullName); // Example
 
     let authToken = '';
 
@@ -118,7 +120,7 @@ const UserProfile: React.FC = () => {
     try {
       // Path should be relative to the configured endpoint (e.g., "users/me")
       const path = 'users/me'; // No leading slash
-      console.log('Making API PUT request to path:', path);
+      // console.log('Making API PUT request to path:', path);
 
       // Call the API using put method from Amplify v6 with manual authorization
       const { body } = await put({
@@ -136,7 +138,7 @@ const UserProfile: React.FC = () => {
 
       // If needed, parse response
       const result = await body.json();
-      console.log('Update response:', result);
+      // console.log('Update response:', result);
 
       setProfile({ ...profile, full_name: editFullName });
       setSaveSuccess(true);
