@@ -69,6 +69,17 @@
 - Updated `backend/app/utils/cognito.py` to use `claims['aud']`.
 - Advised user to confirm `COGNITO_APP_CLIENT_ID` environment variable in Lambda is set to `4s0peq2cv7vuuvq00frkrt13hb`.
 
+### Day 4.8: FastAPI Response Validation Error (Current)
+- After fixing auth, API Gateway returned 500 Internal Server Error.
+- Lambda logs showed `fastapi.exceptions.ResponseValidationError` for `/api/v1/users/me`.
+- Error indicated missing `id` and `tenant_id` fields in the response, compared to the `User` Pydantic model.
+- The actual data from DynamoDB contained `user_id` instead of `id`, and `tenant_id` was missing entirely.
+- Updated `backend/app/api/endpoints/users.py` in `read_users_me` to transform `user_id` to `id` in the response.
+- User to investigate why `tenant_id` is missing from the DynamoDB user item and check the Cognito post-confirmation trigger.
+- Confirmed via screenshot that `tenant_id` is missing from the specific user's DynamoDB item.
+- Updated `backend/app/models/user.py` to make `tenant_id` Optional in `UserInDB` model as a short-term fix.
+- Discussed long-term strategy for `tenant_id` assignment, Cognito post-confirmation trigger, and data backfill.
+
 ## Notes
 
 ### Progress on Day 2 (Current)
@@ -145,6 +156,4 @@
 - Investigating `InvalidApiName` error despite matching API name in `UserProfile.tsx` and `amplify_outputs.json`.
   - Cleaned up placeholder comments in `UserProfile.tsx`.
 - Identified that `Amplify.configure` was not registering the API configuration from `amplify_outputs.json`.
-  - Modified `main.tsx` to call `Amplify.configure({ ...outputs })` to ensure proper registration.
-- `Amplify.configure({ ...outputs })` still failed to register API config.
-  - Updated `main.tsx` to manually parse `outputs.api.plugins.awsAPIPlugin` and construct the `API.REST` configuration for `Amplify.configure`.
+  - Modified `
