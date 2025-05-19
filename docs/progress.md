@@ -80,13 +80,14 @@
 - Updated `backend/app/models/user.py` to make `tenant_id` Optional in `UserInDB` model as a short-term fix.
 - Discussed long-term strategy for `tenant_id` assignment, Cognito post-confirmation trigger, and data backfill.
 
-### Day 4.9: API Gateway CORS Troubleshooting (Current)
+### Day 4.9: API Gateway CORS Troubleshooting (Resolved) ✅
 - Investigated CORS preflight (OPTIONS) request failures from Amplify-hosted frontend (`https://main.d9e32iiq5ru07.amplifyapp.com`) to API Gateway.
 - Error: "No 'Access-Control-Allow-Origin' header is present on the requested resource."
 - Reviewed API Gateway (HTTP API) configuration in `infrastructure/lib/infrastructure-stack.ts`.
 - Identified potential mismatch in `allowOrigins`: CDK had a trailing slash (`https://main.d9e32iiq5ru07.amplifyapp.com/`) while browser error showed no trailing slash.
 - Updated `corsPreflight.allowOrigins` in `infrastructure-stack.ts` to remove the trailing slash for the Amplify domain.
 - Advised user to redeploy CDK stack and clear browser cache.
+- User confirmed API is working after redeploying the CDK stack with the fix.
 
 ## Notes
 
