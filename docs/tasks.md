@@ -47,7 +47,7 @@ The project foundation has already been established with:
 - [x] Set up API Gateway and basic Lambda integration
 - [x] Create DynamoDB access patterns for user/tenant data
 - [x] Implement secure API endpoints for user profiles
-- [ ] Connect frontend to backend user profile APIs
+- [x] Connect frontend to backend user profile APIs
 
 **Milestone:** User signup creates DynamoDB records, API Gateway and Lambda functioning
 
