@@ -150,7 +150,7 @@ export class InfrastructureStack extends cdk.Stack {
           CorsHttpMethod.DELETE,
         ],
         allowCredentials: true,
-        allowOrigins: ['http://localhost:3000', 'https://main.youramplifyapp.com'], // Replace with your frontend URLs
+        allowOrigins: ['http://localhost:3000', 'https://main.d9e32iiq5ru07.amplifyapp.com'], // Replace with your frontend URLs
       },
       defaultAuthorizer: authorizer, // Secure all routes by default
     });
