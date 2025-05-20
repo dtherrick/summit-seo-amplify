@@ -6,6 +6,7 @@ import outputs from "../../amplify_outputs.json";
 import { Amplify } from "aws-amplify";
 import { Authenticator } from '@aws-amplify/ui-react'; // Import Authenticator Provider
 import '@aws-amplify/ui-react/styles.css';
+import { AuthProvider } from './contexts/AuthContext'; // Import our AuthProvider
 
 import { RouterProvider, createRouter } from '@tanstack/react-router';
 import { routeTree } from './routeTree.gen'; // Import the generated route tree
@@ -60,8 +61,10 @@ declare module '@tanstack/react-router' {
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <Authenticator.Provider> {/* Wrap RouterProvider with Authenticator.Provider */}
-      <RouterProvider router={router} />
+    <Authenticator.Provider> {/* Amplify UI Authenticator context */}
+      <AuthProvider> {/* Our custom Auth context */}
+        <RouterProvider router={router} />
+      </AuthProvider>
     </Authenticator.Provider>
   </React.StrictMode>
 );

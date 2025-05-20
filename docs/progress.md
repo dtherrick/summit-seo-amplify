@@ -89,6 +89,14 @@
 - Advised user to redeploy CDK stack and clear browser cache.
 - User confirmed API is working after redeploying the CDK stack with the fix.
 
+### Day 5: Initial Survey UI / Landing Page (In Progress)
+- **Resolved Vite import error for `LandingPageContent`:**
+  - The error "Failed to resolve import '../components/marketing/LandingPageContent' from 'src/routes/index.tsx'" occurred because the component was not found at the specified path.
+  - Created the directory `frontend/src/components/marketing/`.
+  - Created a placeholder file `frontend/src/components/marketing/LandingPageContent.tsx`.
+  - This allows the import in `frontend/src/routes/index.tsx` to resolve, enabling the initial page to load.
+- Next steps: Populate `LandingPageContent.tsx` with actual content and integrate with the initial survey flow.
+
 ## Notes
 
 ### Progress on Day 2 (Current)

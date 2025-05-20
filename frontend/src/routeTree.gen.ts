@@ -12,8 +12,11 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as SignupImport } from './routes/signup'
+import { Route as OnboardingImport } from './routes/onboarding'
 import { Route as LoginImport } from './routes/login'
+import { Route as ForgotPasswordImport } from './routes/forgot-password'
 import { Route as DashboardImport } from './routes/dashboard'
+import { Route as ConfirmSignupImport } from './routes/confirm-signup'
 import { Route as IndexImport } from './routes/index'
 
 // Create/Update Routes
@@ -24,15 +27,33 @@ const SignupRoute = SignupImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const OnboardingRoute = OnboardingImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const LoginRoute = LoginImport.update({
   id: '/login',
   path: '/login',
   getParentRoute: () => rootRoute,
 } as any)
 
+const ForgotPasswordRoute = ForgotPasswordImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const DashboardRoute = DashboardImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ConfirmSignupRoute = ConfirmSignupImport.update({
+  id: '/confirm-signup',
+  path: '/confirm-signup',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -53,6 +74,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
+    '/confirm-signup': {
+      id: '/confirm-signup'
+      path: '/confirm-signup'
+      fullPath: '/confirm-signup'
+      preLoaderRoute: typeof ConfirmSignupImport
+      parentRoute: typeof rootRoute
+    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
@@ -60,11 +88,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardImport
       parentRoute: typeof rootRoute
     }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordImport
+      parentRoute: typeof rootRoute
+    }
     '/login': {
       id: '/login'
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginImport
+      parentRoute: typeof rootRoute
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingImport
       parentRoute: typeof rootRoute
     }
     '/signup': {
@@ -81,46 +123,83 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/confirm-signup': typeof ConfirmSignupRoute
   '/dashboard': typeof DashboardRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
+  '/onboarding': typeof OnboardingRoute
   '/signup': typeof SignupRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/confirm-signup': typeof ConfirmSignupRoute
   '/dashboard': typeof DashboardRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
+  '/onboarding': typeof OnboardingRoute
   '/signup': typeof SignupRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
+  '/confirm-signup': typeof ConfirmSignupRoute
   '/dashboard': typeof DashboardRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
+  '/onboarding': typeof OnboardingRoute
   '/signup': typeof SignupRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dashboard' | '/login' | '/signup'
+  fullPaths:
+    | '/'
+    | '/confirm-signup'
+    | '/dashboard'
+    | '/forgot-password'
+    | '/login'
+    | '/onboarding'
+    | '/signup'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/login' | '/signup'
-  id: '__root__' | '/' | '/dashboard' | '/login' | '/signup'
+  to:
+    | '/'
+    | '/confirm-signup'
+    | '/dashboard'
+    | '/forgot-password'
+    | '/login'
+    | '/onboarding'
+    | '/signup'
+  id:
+    | '__root__'
+    | '/'
+    | '/confirm-signup'
+    | '/dashboard'
+    | '/forgot-password'
+    | '/login'
+    | '/onboarding'
+    | '/signup'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ConfirmSignupRoute: typeof ConfirmSignupRoute
   DashboardRoute: typeof DashboardRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
+  OnboardingRoute: typeof OnboardingRoute
   SignupRoute: typeof SignupRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ConfirmSignupRoute: ConfirmSignupRoute,
   DashboardRoute: DashboardRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
+  OnboardingRoute: OnboardingRoute,
   SignupRoute: SignupRoute,
 }
 
@@ -135,19 +214,31 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
+        "/confirm-signup",
         "/dashboard",
+        "/forgot-password",
         "/login",
+        "/onboarding",
         "/signup"
       ]
     },
     "/": {
       "filePath": "index.tsx"
     },
+    "/confirm-signup": {
+      "filePath": "confirm-signup.tsx"
+    },
     "/dashboard": {
       "filePath": "dashboard.tsx"
     },
+    "/forgot-password": {
+      "filePath": "forgot-password.tsx"
+    },
     "/login": {
       "filePath": "login.tsx"
+    },
+    "/onboarding": {
+      "filePath": "onboarding.tsx"
     },
     "/signup": {
       "filePath": "signup.tsx"

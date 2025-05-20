@@ -1,28 +1,34 @@
-import { createFileRoute } from '@tanstack/react-router';
-import { Authenticator } from '@aws-amplify/ui-react';
-import '@aws-amplify/ui-react/styles.css';
-import { useNavigate } from '@tanstack/react-router';
-import { useEffect } from 'react';
-import { useAuthenticator } from '@aws-amplify/ui-react';
-
+import { createFileRoute, Navigate } from '@tanstack/react-router';
+import { LoginForm } from '../components/auth/LoginForm';
+import { useAuth } from '../contexts/AuthContext'; // Adjust path as needed
+import { Flex, Loader } from '@aws-amplify/ui-react';
 
 export const Route = createFileRoute('/login')({
-  component: LoginComponent,
+  component: LoginPage,
+  // TanStack Router v1 allows defining search param validation in the route
+  validateSearch: (search: Record<string, unknown>): { redirect?: string } => {
+    return {
+      redirect: typeof search.redirect === 'string' ? search.redirect : undefined,
+    };
+  },
 });
 
-function LoginComponent() {
-  const navigate = useNavigate();
-  const { authStatus } = useAuthenticator(context => [context.authStatus]);
+function LoginPage() {
+  const { user, isLoading } = useAuth();
 
-  useEffect(() => {
-    if (authStatus === 'authenticated') {
-      navigate({ to: '/dashboard', replace: true });
-    }
-  }, [authStatus, navigate]);
+  if (isLoading) {
+    return (
+      <Flex justifyContent="center" alignItems="center" minHeight="100vh">
+        <Loader size="large" />
+      </Flex>
+    );
+  }
 
-  return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-      <Authenticator />
-    </div>
-  );
+  if (user) {
+    // If user is already logged in, redirect them (e.g., to dashboard)
+    // This could also use the 'redirect' search param if it makes sense
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return <LoginForm />;
 }

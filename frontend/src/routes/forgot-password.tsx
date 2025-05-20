@@ -1,13 +1,13 @@
 import { createFileRoute, Navigate } from '@tanstack/react-router';
-import { BusinessSignupForm } from '../components/auth/BusinessSignupForm';
+import { ForgotPasswordForm } from '../components/auth/ForgotPasswordForm';
 import { useAuth } from '../contexts/AuthContext'; // Adjust path as needed
 import { Flex, Loader } from '@aws-amplify/ui-react';
 
-export const Route = createFileRoute('/signup')({
-  component: SignupPage,
+export const Route = createFileRoute('/forgot-password')({
+  component: ForgotPasswordPage,
 });
 
-function SignupPage() {
+function ForgotPasswordPage() {
   const { user, isLoading } = useAuth();
 
   if (isLoading) {
@@ -19,9 +19,9 @@ function SignupPage() {
   }
 
   if (user) {
-    // If user is already logged in, redirect them
+    // If user is already logged in, they probably don't need to reset their password
     return <Navigate to="/dashboard" replace />;
   }
 
-  return <BusinessSignupForm />;
+  return <ForgotPasswordForm />;
 }
