@@ -1,10 +1,14 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App.tsx";
+// import App from "./App.tsx"; // App.tsx will no longer be the main entry point
 import "./index.css";
 import outputs from "../../amplify_outputs.json";
 import { Amplify } from "aws-amplify";
-// import { parseAmplifyConfig } from "aws-amplify/utils"; // No longer strictly needed for this test
+import { Authenticator } from '@aws-amplify/ui-react'; // Import Authenticator Provider
+import '@aws-amplify/ui-react/styles.css';
+
+import { RouterProvider, createRouter } from '@tanstack/react-router';
+import { routeTree } from './routeTree.gen'; // Import the generated route tree
 
 // Log the raw outputs to see what's being loaded
 // console.log(
@@ -44,8 +48,20 @@ Amplify.configure(amplifyConfig);
 //   JSON.stringify(Amplify.getConfig(), null, 2)
 // );
 
+// Create a new router instance
+const router = createRouter({ routeTree });
+
+// Register the router instance for type safety
+declare module '@tanstack/react-router' {
+  interface Register {
+    router: typeof router;
+  }
+}
+
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <App />
+    <Authenticator.Provider> {/* Wrap RouterProvider with Authenticator.Provider */}
+      <RouterProvider router={router} />
+    </Authenticator.Provider>
   </React.StrictMode>
 );
