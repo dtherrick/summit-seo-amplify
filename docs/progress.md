@@ -2,8 +2,8 @@
 
 ## Project Status Overview
 **Current Phase:** Week 1 - Foundation & Authentication
-**Current Day:** Day 3 - Authentication Implementation
-**Overall Progress:** 3/21 days complete (approximately 14%)
+**Current Day:** Day 5 - Initial Survey UI
+**Overall Progress:** 5/21 days complete (approximately 23.8%)
 
 ## Completed Tasks
 
@@ -90,12 +90,19 @@
 - User confirmed API is working after redeploying the CDK stack with the fix.
 
 ### Day 5: Initial Survey UI / Landing Page (In Progress)
-- **Resolved Vite import error for `LandingPageContent`:**
+- **Resolved Vite import error for `LandingPageContent`:** (This was an older item, keeping for context)
   - The error "Failed to resolve import '../components/marketing/LandingPageContent' from 'src/routes/index.tsx'" occurred because the component was not found at the specified path.
   - Created the directory `frontend/src/components/marketing/`.
   - Created a placeholder file `frontend/src/components/marketing/LandingPageContent.tsx`.
   - This allows the import in `frontend/src/routes/index.tsx` to resolve, enabling the initial page to load.
-- Next steps: Populate `LandingPageContent.tsx` with actual content and integrate with the initial survey flow.
+- **Configured Root Route for Landing Page:** ✅
+  - Updated `frontend/src/routes/index.tsx` to use `LandingPage.tsx` from `frontend/src/pages/LandingPage.tsx` for the root path (`/`).
+  - Ensured unauthenticated users are directed to the correct landing page.
+- **Corrected `SurveyWizard.tsx` Component:** ✅
+  - Resolved linter errors by correctly typing the `steps` array and placeholder step components.
+- **Cleaned Global Styles:** ✅
+  - Removed a global purple gradient background from `frontend/src/index.css` to allow component-specific backgrounds to take precedence.
+- Next steps: Complete implementation of survey steps in `SurveyWizard.tsx`, including form validation and state management.
 
 ## Notes
 

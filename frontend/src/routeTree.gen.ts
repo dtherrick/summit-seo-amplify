@@ -18,6 +18,7 @@ import { Route as ForgotPasswordImport } from './routes/forgot-password'
 import { Route as DashboardImport } from './routes/dashboard'
 import { Route as ConfirmSignupImport } from './routes/confirm-signup'
 import { Route as IndexImport } from './routes/index'
+import { Route as OnboardingSurveyImport } from './routes/onboarding/survey'
 
 // Create/Update Routes
 
@@ -61,6 +62,12 @@ const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRoute,
+} as any)
+
+const OnboardingSurveyRoute = OnboardingSurveyImport.update({
+  id: '/survey',
+  path: '/survey',
+  getParentRoute: () => OnboardingRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
@@ -116,10 +123,29 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignupImport
       parentRoute: typeof rootRoute
     }
+    '/onboarding/survey': {
+      id: '/onboarding/survey'
+      path: '/survey'
+      fullPath: '/onboarding/survey'
+      preLoaderRoute: typeof OnboardingSurveyImport
+      parentRoute: typeof OnboardingImport
+    }
   }
 }
 
 // Create and export the route tree
+
+interface OnboardingRouteChildren {
+  OnboardingSurveyRoute: typeof OnboardingSurveyRoute
+}
+
+const OnboardingRouteChildren: OnboardingRouteChildren = {
+  OnboardingSurveyRoute: OnboardingSurveyRoute,
+}
+
+const OnboardingRouteWithChildren = OnboardingRoute._addFileChildren(
+  OnboardingRouteChildren,
+)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -127,8 +153,9 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
-  '/onboarding': typeof OnboardingRoute
+  '/onboarding': typeof OnboardingRouteWithChildren
   '/signup': typeof SignupRoute
+  '/onboarding/survey': typeof OnboardingSurveyRoute
 }
 
 export interface FileRoutesByTo {
@@ -137,8 +164,9 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
-  '/onboarding': typeof OnboardingRoute
+  '/onboarding': typeof OnboardingRouteWithChildren
   '/signup': typeof SignupRoute
+  '/onboarding/survey': typeof OnboardingSurveyRoute
 }
 
 export interface FileRoutesById {
@@ -148,8 +176,9 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
-  '/onboarding': typeof OnboardingRoute
+  '/onboarding': typeof OnboardingRouteWithChildren
   '/signup': typeof SignupRoute
+  '/onboarding/survey': typeof OnboardingSurveyRoute
 }
 
 export interface FileRouteTypes {
@@ -162,6 +191,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/onboarding'
     | '/signup'
+    | '/onboarding/survey'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -171,6 +201,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/onboarding'
     | '/signup'
+    | '/onboarding/survey'
   id:
     | '__root__'
     | '/'
@@ -180,6 +211,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/onboarding'
     | '/signup'
+    | '/onboarding/survey'
   fileRoutesById: FileRoutesById
 }
 
@@ -189,7 +221,7 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
-  OnboardingRoute: typeof OnboardingRoute
+  OnboardingRoute: typeof OnboardingRouteWithChildren
   SignupRoute: typeof SignupRoute
 }
 
@@ -199,7 +231,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
-  OnboardingRoute: OnboardingRoute,
+  OnboardingRoute: OnboardingRouteWithChildren,
   SignupRoute: SignupRoute,
 }
 
@@ -238,10 +270,17 @@ export const routeTree = rootRoute
       "filePath": "login.tsx"
     },
     "/onboarding": {
-      "filePath": "onboarding.tsx"
+      "filePath": "onboarding.tsx",
+      "children": [
+        "/onboarding/survey"
+      ]
     },
     "/signup": {
       "filePath": "signup.tsx"
+    },
+    "/onboarding/survey": {
+      "filePath": "onboarding/survey.tsx",
+      "parent": "/onboarding"
     }
   }
 }

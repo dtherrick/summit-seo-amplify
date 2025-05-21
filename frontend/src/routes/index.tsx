@@ -1,6 +1,5 @@
 import { createFileRoute, Navigate } from '@tanstack/react-router';
-import LandingPageContent from '../components/marketing/LandingPageContent';
-import { Layout } from '../components/common/Layout'; // Adjust if path is different
+import { LandingPage } from '../pages/LandingPage'; // Corrected import
 import { useAuth } from '../contexts/AuthContext'; // Adjust path as needed
 
 export const Route = createFileRoute('/')({
@@ -12,11 +11,9 @@ function IndexPage() {
 
   if (isLoading) {
     // You might want a more sophisticated loading indicator here or handle it in __root.tsx
-    return (
-      <Layout showNav={false}>
-        <div>Loading...</div>
-      </Layout>
-    );
+    // Consider if LandingPage itself has a loading state or can be shown.
+    // For now, keeping a simple loading div, but this could be improved.
+    return <div>Loading...</div>; // Simplified loading, as LandingPage has its own Layout
   }
 
   if (user) {
@@ -25,9 +22,6 @@ function IndexPage() {
     return <Navigate to="/dashboard" replace />;
   }
 
-  return (
-    <Layout showNav={false}>
-      <LandingPageContent />
-    </Layout>
-  );
+  // Render the LandingPage directly as it contains its own Layout
+  return <LandingPage />;
 }

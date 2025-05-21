@@ -4,13 +4,13 @@
 
 body {
   margin: 0;
-  background: linear-gradient(180deg, rgb(117, 81, 194), rgb(255, 255, 255));
-  display: flex;
+  /* Removed background: linear-gradient(180deg, rgb(117, 81, 194), rgb(255, 255, 255)); */
+  /* Removed display: flex; */
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  height: 100vh;
-  width: 100vw;
-  justify-content: center;
-  align-items: center;
+  height: 100vh; /* Consider if this is needed or handled by root components */
+  width: 100vw; /* Consider if this is needed or handled by root components */
+  /* Removed justify-content: center; */
+  /* Removed align-items: center; */
 }
 
 main {

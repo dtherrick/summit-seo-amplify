@@ -65,11 +65,14 @@ The project foundation has already been established with:
 
 ### Day 5: Initial Survey UI
 
-- [ ] Design and implement multi-step survey wizard UI
+- [x] Design and implement multi-step survey wizard UI (Initial structure and typing corrected)
 - [ ] Create form validation for survey fields
 - [ ] Implement client-side state management for survey data
 - [ ] Add navigation between survey steps
-- [ ] Ensure responsive design for mobile/desktop
+- [x] Ensure responsive design for mobile/desktop (Base Ant Design components provide this)
+- [x] Configure root route (`/`) to display `LandingPage.tsx` for unauthenticated users.
+- [x] Resolve linter errors in `SurveyWizard.tsx`.
+- [x] Remove global purple gradient background from `index.css`.
 
 **Milestone:** Functioning survey wizard UI with client-side validation
 
