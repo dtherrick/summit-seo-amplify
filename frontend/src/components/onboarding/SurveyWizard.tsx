@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Steps, Button, Card, Form, Input, Row, Col, Typography, Space, Select, Checkbox, Modal, Descriptions, message } from 'antd';
 import { useNavigate } from '@tanstack/react-router';
+import { submitSurvey, type SurveyDataPayload } from '../../services/onboardingService'; // Import the service
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -614,21 +615,21 @@ export const SurveyWizard: React.FC = () => {
   const executeActualSubmission = async () => {
     if (!confirmedSurveyData) return;
     setIsConfirmationModalVisible(false);
-    setIsSubmitting(true); // Set loading state
-    console.log('Survey Data Submitted (after confirmation):', confirmedSurveyData);
+    setIsSubmitting(true);
+    console.log('Survey Data to be submitted:', confirmedSurveyData);
     try {
-      // TODO: Implement actual submission logic (e.g., API call to surveyApi.submitSurvey)
-      // Example: await surveyApi.submitSurvey(confirmedSurveyData);
-      // Simulate API call for now
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Call the new service function
+      // Ensure confirmedSurveyData matches SurveyDataPayload structure
+      const result = await submitSurvey(confirmedSurveyData as SurveyDataPayload);
 
-      message.success('Survey Submitted Successfully! - Check console for data.');
-      navigate({ to: '/dashboard' }); // Navigate after successful submission
-    } catch (error) {
-      console.error("Survey submission error:", error);
-      message.error('Survey submission failed. Please try again.');
+      console.log('API Submission Result:', result);
+      message.success(result.message || 'Survey Submitted Successfully!');
+      navigate({ to: '/dashboard' });
+    } catch (error: any) {
+      console.error("Survey submission error in component:", error);
+      message.error(error.message || 'Survey submission failed. Please try again.');
     } finally {
-      setIsSubmitting(false); // Reset loading state
+      setIsSubmitting(false);
     }
   };
 
