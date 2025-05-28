@@ -102,6 +102,11 @@
   - Resolved linter errors by correctly typing the `steps` array and placeholder step components.
 - **Cleaned Global Styles:** ✅
   - Removed a global purple gradient background from `frontend/src/index.css` to allow component-specific backgrounds to take precedence.
+- **Adjusted Survey Wizard Width:** ✅
+  - Modified `frontend/src/components/onboarding/SurveyWizard.tsx` to increase the column spans for larger screen sizes (lg, xl, xxl), allowing the survey wizard to utilize more horizontal space and prevent step headers from being cut off.
+- **Improved Survey Step Header Display:** ✅
+  - Applied flexbox styling to the Ant Design `Steps` component in `frontend/src/components/onboarding/SurveyWizard.tsx` to ensure step headers are evenly spaced across the card.
+  - Enabled text wrapping for step titles to prevent truncation of longer headers like 'Competitors & Content'.
 - Next steps: Complete implementation of survey steps in `SurveyWizard.tsx`, including form validation and state management.
 
 ## Notes

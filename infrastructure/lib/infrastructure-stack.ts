@@ -182,6 +182,14 @@ export class InfrastructureStack extends cdk.Stack {
       authorizer: new HttpNoneAuthorizer(), // Make this route public
     });
 
+    // Add route for POST /api/v1/onboarding/survey
+    httpApi.addRoutes({
+      path: '/api/v1/onboarding/survey',
+      methods: [HttpMethod.POST],
+      integration: apiLambdaIntegration,
+      // Authorizer is already set at the API level (defaultAuthorizer), so it applies here.
+    });
+
     // --- End of API Lambda and API Gateway Resources ---
 
     // --- End of New Lambda Resources ---

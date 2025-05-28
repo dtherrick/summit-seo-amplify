@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Steps, Button, Card, Form, Input, Row, Col, Typography, Space, Select, Checkbox, Modal, Descriptions } from 'antd';
+import { Steps, Button, Card, Form, Input, Row, Col, Typography, Space, Select, Checkbox, Modal, Descriptions, message } from 'antd';
 import { useNavigate } from '@tanstack/react-router';
 
 const { Title, Text } = Typography;
@@ -12,6 +12,9 @@ interface SurveyData {
     brand_description?: string;
     url?: string;
     categories?: string[];
+    products_services?: string;
+    location_info?: string;
+    niche?: string;
   };
   audience?: {
     who_is_your_audience?: string;
@@ -32,8 +35,10 @@ interface SurveyData {
   };
   guardrails?: string; // Top-level as in old survey
   content_pillars?: string; // Top-level as in old survey
+  brand_image_tone?: string; // Added this top-level field
   goals?: {
     primary_goals?: string[];
+    current_marketing_activities?: string[];
   };
   // Fields from the original SurveyData that might still be needed or can be mapped/removed later
   // industry?: string; // Covered by general_information.categories or could be a new field if distinct
@@ -78,6 +83,16 @@ const primaryGoalsList = [
   // Add other goals from the old survey if any
 ];
 
+const commonMarketingActivities = [
+  { label: 'SEO (Search Engine Optimization)', value: 'seo' },
+  { label: 'Content Marketing (Blogging, Articles)', value: 'content_marketing' },
+  { label: 'Social Media Marketing', value: 'social_media' },
+  { label: 'Email Marketing', value: 'email_marketing' },
+  { label: 'PPC Advertising (Google Ads, Social Ads)', value: 'ppc_advertising' },
+  { label: 'Affiliate Marketing', value: 'affiliate_marketing' },
+  { label: 'Influencer Marketing', value: 'influencer_marketing' },
+  { label: 'Video Marketing', value: 'video_marketing' },
+];
 
 // Step 1: General Information
 const Step1GeneralInformation: React.FC<StepProps> = () => {
@@ -101,6 +116,23 @@ const Step1GeneralInformation: React.FC<StepProps> = () => {
           maxLength={500}
           showCount
         />
+      </Form.Item>
+      <Form.Item
+        name={['general_information', 'products_services']}
+        label="Primary Products/Services"
+      >
+        <Input.TextArea
+          rows={3}
+          placeholder="e.g., Custom Web Design, Artisanal Coffee Beans, Online Yoga Classes"
+          maxLength={500}
+          showCount
+        />
+      </Form.Item>
+      <Form.Item
+        name={['general_information', 'location_info']}
+        label="Location Information (if applicable)"
+      >
+        <Input placeholder="e.g., San Francisco, CA or 'Online Only'" />
       </Form.Item>
       <Form.Item
         name={['general_information', 'url']}
@@ -128,6 +160,12 @@ const Step1GeneralInformation: React.FC<StepProps> = () => {
           placeholder="Select categories"
           options={categoriesList.map(cat => ({ label: cat, value: cat }))}
         />
+      </Form.Item>
+      <Form.Item
+        name={['general_information', 'niche']}
+        label="Specific Niche (Optional)"
+      >
+        <Input placeholder="e.g., Organic Dog Treats, Handmade Wedding Invitations" />
       </Form.Item>
     </>
   );
@@ -236,6 +274,20 @@ const Step4CompetitorsContent: React.FC<StepProps> = () => {
       <Form.Item
         name={['competitors_content', 'key_competitors']}
         label="Key Competitors (URLs)"
+        rules={[
+          {
+            validator: async (_, values) => {
+              if (!values || values.length === 0) return Promise.resolve(); // Allow empty
+              const urlPattern = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([\/\w .-]*)*\/?$/;
+              for (const value of values) {
+                if (!urlPattern.test(value)) {
+                  return Promise.reject(new Error(`'${value}' is not a valid URL format.`));
+                }
+              }
+              return Promise.resolve();
+            },
+          },
+        ]}
       >
         <Select
           mode="tags"
@@ -247,6 +299,20 @@ const Step4CompetitorsContent: React.FC<StepProps> = () => {
       <Form.Item
         name={['competitors_content', 'secondary_competitors']}
         label="Secondary Competitors (URLs)"
+        rules={[
+          {
+            validator: async (_, values) => {
+              if (!values || values.length === 0) return Promise.resolve(); // Allow empty
+              const urlPattern = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([\/\w .-]*)*\/?$/;
+              for (const value of values) {
+                if (!urlPattern.test(value)) {
+                  return Promise.reject(new Error(`'${value}' is not a valid URL format.`));
+                }
+              }
+              return Promise.resolve();
+            },
+          },
+        ]}
       >
         <Select
           mode="tags"
@@ -277,6 +343,17 @@ const Step4CompetitorsContent: React.FC<StepProps> = () => {
           showCount
         />
       </Form.Item>
+      <Form.Item
+        name="brand_image_tone" // Top-level
+        label="Brand Image/Tone Guidelines"
+      >
+        <Input.TextArea
+          rows={4}
+          placeholder="Describe your desired brand voice (e.g., professional, friendly, witty, informative)"
+          maxLength={500}
+          showCount
+        />
+      </Form.Item>
     </>
   );
 };
@@ -285,11 +362,33 @@ const Step4CompetitorsContent: React.FC<StepProps> = () => {
 const Step5Goals: React.FC<StepProps> = () => {
   return (
     <>
-      <Title level={4} style={{ marginBottom: '24px' }}>Goals</Title>
+      <Title level={4} style={{ marginBottom: '24px' }}>Goals & Current Activities</Title>
+      <Form.Item
+        name={['goals', 'current_marketing_activities']}
+        label="What are your current marketing activities?"
+      >
+        <Select
+          mode="tags"
+          style={{ width: '100%' }}
+          placeholder="Select or type your current marketing activities (e.g., SEO, Blogging)"
+          options={commonMarketingActivities}
+          tokenSeparators={[',']}
+        />
+      </Form.Item>
       <Form.Item
         name={['goals', 'primary_goals']}
         label="Primary Business Goals"
-        rules={[{ required: true, message: 'Please specify at least one primary goal!' }]}
+        rules={[
+          { required: true, message: 'Please specify at least one primary goal!' },
+          {
+            validator: async (_, value) => {
+              if (value && value.length > 3) {
+                return Promise.reject(new Error('Please select a maximum of 3 goals.'));
+              }
+              return Promise.resolve();
+            },
+          }
+        ]}
       >
         <Select
           mode="multiple"
@@ -451,6 +550,7 @@ export const SurveyWizard: React.FC = () => {
   const [current, setCurrent] = useState(0);
   const [isConfirmationModalVisible, setIsConfirmationModalVisible] = useState(false);
   const [confirmedSurveyData, setConfirmedSurveyData] = useState<SurveyData | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false); // Added for loading state
 
   // Initial values for the form, can be set here if needed
   // useEffect(() => {
@@ -495,8 +595,8 @@ export const SurveyWizard: React.FC = () => {
   };
 
   const handleSkip = () => {
-    alert('Survey Skipped (Placeholder)');
-    // navigate({ to: '/dashboard' });
+    // alert('Survey Skipped (Placeholder)'); // Old placeholder
+    navigate({ to: '/dashboard' }); // Navigate to dashboard
   };
 
   const handleFinalSubmit = async () => {
@@ -507,18 +607,29 @@ export const SurveyWizard: React.FC = () => {
       setIsConfirmationModalVisible(true);
     } catch (errorInfo) {
       console.log('Validation Failed before confirmation:', errorInfo);
-      alert('Please correct the errors before proceeding to confirmation.');
+      message.error('Please correct the errors before proceeding to confirmation.');
     }
   };
 
   const executeActualSubmission = async () => {
     if (!confirmedSurveyData) return;
     setIsConfirmationModalVisible(false);
+    setIsSubmitting(true); // Set loading state
     console.log('Survey Data Submitted (after confirmation):', confirmedSurveyData);
-    // TODO: Implement actual submission logic (e.g., API call to surveyApi.submitSurvey)
-    // Example: await surveyApi.submitSurvey(confirmedSurveyData);
-    alert('Survey Submitted Successfully! - Check console for data.');
-    navigate({ to: '/dashboard' }); // Navigate after successful submission
+    try {
+      // TODO: Implement actual submission logic (e.g., API call to surveyApi.submitSurvey)
+      // Example: await surveyApi.submitSurvey(confirmedSurveyData);
+      // Simulate API call for now
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      message.success('Survey Submitted Successfully! - Check console for data.');
+      navigate({ to: '/dashboard' }); // Navigate after successful submission
+    } catch (error) {
+      console.error("Survey submission error:", error);
+      message.error('Survey submission failed. Please try again.');
+    } finally {
+      setIsSubmitting(false); // Reset loading state
+    }
   };
 
   const renderConfirmationContent = (values: SurveyData | null) => {
@@ -538,11 +649,20 @@ export const SurveyWizard: React.FC = () => {
             <Descriptions.Item label="Brand Description" labelStyle={{ fontWeight: 'bold' }}>
               {renderString(values.general_information.brand_description)}
             </Descriptions.Item>
+            <Descriptions.Item label="Primary Products/Services" labelStyle={{ fontWeight: 'bold' }}>
+              {renderString(values.general_information.products_services)}
+            </Descriptions.Item>
+            <Descriptions.Item label="Location Information" labelStyle={{ fontWeight: 'bold' }}>
+              {renderString(values.general_information.location_info)}
+            </Descriptions.Item>
             <Descriptions.Item label="Website URL" labelStyle={{ fontWeight: 'bold' }}>
               {values.general_information.url ? `https://${values.general_information.url}` : 'Not provided'}
             </Descriptions.Item>
             <Descriptions.Item label="Categories" labelStyle={{ fontWeight: 'bold' }}>
               {renderArray(values.general_information.categories)}
+            </Descriptions.Item>
+            <Descriptions.Item label="Specific Niche" labelStyle={{ fontWeight: 'bold' }}>
+              {renderString(values.general_information.niche)}
             </Descriptions.Item>
           </>
         )}
@@ -599,11 +719,21 @@ export const SurveyWizard: React.FC = () => {
         <Descriptions.Item label="Content Pillars" labelStyle={{ fontWeight: 'bold' }}>
           {renderString(values.content_pillars)}
         </Descriptions.Item>
+        <Descriptions.Item label="Brand Image/Tone Guidelines" labelStyle={{ fontWeight: 'bold' }}>
+          {renderString(values.brand_image_tone)}
+        </Descriptions.Item>
 
         {values.goals && (
           <Descriptions.Item label="Primary Goals" labelStyle={{ fontWeight: 'bold' }}>
             {renderArray(values.goals.primary_goals?.map(goalValue =>
               primaryGoalsList.find(g => g.value === goalValue)?.label || goalValue
+            ))}
+          </Descriptions.Item>
+        )}
+        {values.goals?.current_marketing_activities && (
+          <Descriptions.Item label="Current Marketing Activities" labelStyle={{ fontWeight: 'bold' }}>
+            {renderArray(values.goals.current_marketing_activities.map(activityValue =>
+              commonMarketingActivities.find(a => a.value === activityValue)?.label || activityValue
             ))}
           </Descriptions.Item>
         )}
@@ -614,10 +744,21 @@ export const SurveyWizard: React.FC = () => {
   const CurrentStepComponent = stepsMeta[current].content;
 
   return (
-    <Row justify="center" align="middle" style={{ minHeight: 'calc(100vh - 64px)', padding: '20px' }}>
-      <Col xs={24} sm={20} md={16} lg={12} xl={10}>
-        <Card title={<Title level={2} style={{ textAlign: 'center' }}>Tell Us About Your Business</Title>} bordered={false}>
-          <Steps current={current} items={stepsMeta.map(item => ({ key: item.title, title: item.title }))} style={{ marginBottom: '32px' }}/>
+    <Row justify="center" align="middle" style={{ minHeight: '100vh', padding: '20px' }}>
+      <Col xs={24} sm={23} md={22} lg={20} xl={20} xxl={18}>
+        <Card
+          title={<Title level={3} style={{ textAlign: 'center', marginBottom: 0 }}>Tell Us About Your Business</Title>}
+          bordered={false}
+        >
+          <Steps
+            current={current}
+            items={stepsMeta.map(item => ({
+              key: item.title,
+              title: <div style={{ whiteSpace: 'normal', overflowWrap: 'break-word' }}>{item.title}</div>,
+              style: { flex: 1, textAlign: 'center' }
+            }))}
+            style={{ marginBottom: '32px', display: 'flex', width: '100%' }}
+          />
 
           <Form
             form={form}
@@ -661,7 +802,8 @@ export const SurveyWizard: React.FC = () => {
             onOk={executeActualSubmission}
             onCancel={() => setIsConfirmationModalVisible(false)}
             width={800} // Adjust width as needed
-            okText="Submit"
+            okText={isSubmitting ? "Submitting..." : "Submit"} // Change button text on loading
+            okButtonProps={{ loading: isSubmitting }} // Show loading spinner on button
             cancelText="Edit"
           >
             {renderConfirmationContent(confirmedSurveyData)}
