@@ -75,7 +75,7 @@ export const submitSurvey = async (surveyData: SurveyDataPayload) => {
         headers: {
           Authorization: `Bearer ${idToken}`,
         },
-        body: surveyData,
+        body: surveyData as any,
       },
     }).response;
 
