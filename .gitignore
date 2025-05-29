@@ -30,6 +30,10 @@ node_modules
 
 # docs stuff
 docs/BUILD.txt
+docs/console.md
 
 # references
 references/*
+
+#chat history in specstory
+.specstory/*

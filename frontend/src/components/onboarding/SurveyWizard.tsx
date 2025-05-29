@@ -110,6 +110,7 @@ const Step1GeneralInformation: React.FC<StepProps> = () => {
       <Form.Item
         name={['general_information', 'brand_description']}
         label="Description"
+        rules={[{ max: 500, message: 'Description cannot exceed 500 characters.' }]}
       >
         <Input.TextArea
           rows={4}
@@ -121,6 +122,7 @@ const Step1GeneralInformation: React.FC<StepProps> = () => {
       <Form.Item
         name={['general_information', 'products_services']}
         label="Primary Products/Services"
+        rules={[{ max: 500, message: 'Products/Services description cannot exceed 500 characters.' }]}
       >
         <Input.TextArea
           rows={3}
@@ -180,6 +182,7 @@ const Step2Audience: React.FC<StepProps> = () => {
       <Form.Item
         name={['audience', 'who_is_your_audience']}
         label="Who is your target audience?"
+        rules={[{ max: 250, message: 'Audience description cannot exceed 250 characters.' }]}
       >
         <Input.TextArea
           rows={4}
@@ -191,6 +194,7 @@ const Step2Audience: React.FC<StepProps> = () => {
       <Form.Item
         name={['audience', 'needs_and_preferences']}
         label="What are their needs and preferences?"
+        rules={[{ max: 500, message: 'Needs/Preferences description cannot exceed 500 characters.' }]}
       >
         <Input.TextArea
           rows={4}
@@ -277,8 +281,9 @@ const Step4CompetitorsContent: React.FC<StepProps> = () => {
         label="Key Competitors (URLs)"
         rules={[
           {
-            validator: async (_, values) => {
+            validator: async (_, values: string[] | undefined) => {
               if (!values || values.length === 0) return Promise.resolve(); // Allow empty
+              if (values.length > 10) return Promise.reject(new Error('You can add a maximum of 10 key competitors.'));
               const urlPattern = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([\/\w .-]*)*\/?$/;
               for (const value of values) {
                 if (!urlPattern.test(value)) {
@@ -302,8 +307,9 @@ const Step4CompetitorsContent: React.FC<StepProps> = () => {
         label="Secondary Competitors (URLs)"
         rules={[
           {
-            validator: async (_, values) => {
+            validator: async (_, values: string[] | undefined) => {
               if (!values || values.length === 0) return Promise.resolve(); // Allow empty
+              if (values.length > 10) return Promise.reject(new Error('You can add a maximum of 10 secondary competitors.'));
               const urlPattern = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([\/\w .-]*)*\/?$/;
               for (const value of values) {
                 if (!urlPattern.test(value)) {
@@ -325,6 +331,7 @@ const Step4CompetitorsContent: React.FC<StepProps> = () => {
       <Form.Item
         name="guardrails" // Top-level
         label="Content Guardrails"
+        rules={[{ max: 500, message: 'Guardrails cannot exceed 500 characters.' }]}
       >
         <Input.TextArea
           rows={4}
@@ -336,6 +343,7 @@ const Step4CompetitorsContent: React.FC<StepProps> = () => {
       <Form.Item
         name="content_pillars" // Top-level
         label="Content Pillars"
+        rules={[{ max: 500, message: 'Content pillars description cannot exceed 500 characters.' }]}
       >
         <Input.TextArea
           rows={4}
@@ -347,6 +355,7 @@ const Step4CompetitorsContent: React.FC<StepProps> = () => {
       <Form.Item
         name="brand_image_tone" // Top-level
         label="Brand Image/Tone Guidelines"
+        rules={[{ max: 500, message: 'Brand image/tone guidelines cannot exceed 500 characters.' }]}
       >
         <Input.TextArea
           rows={4}
@@ -546,271 +555,275 @@ const stepsMeta: { title: string; content: React.FC<StepProps>; sectionKey: stri
 ];
 
 export const SurveyWizard: React.FC = () => {
+  const [currentStep, setCurrentStep] = useState(0);
+  const [form] = Form.useForm<SurveyData>();
   const navigate = useNavigate();
-  const [form] = Form.useForm<SurveyData>(); // Main form instance
-  const [current, setCurrent] = useState(0);
-  const [isConfirmationModalVisible, setIsConfirmationModalVisible] = useState(false);
-  const [confirmedSurveyData, setConfirmedSurveyData] = useState<SurveyData | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false); // Added for loading state
+  const [isSubmissionModalVisible, setIsSubmissionModalVisible] = useState(false);
+  const [submittedData, setSubmittedData] = useState<SurveyData | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSkipping, setIsSkipping] = useState(false);
 
-  // Initial values for the form, can be set here if needed
-  // useEffect(() => {
-  //   form.setFieldsValue({
-  //     competitors_content: { key_competitors: [''] }, // Example if you need to init dynamic fields
-  //   });
-  // }, [form]);
+  // Define steps with their content and associated field names for validation
+  // NOTE: Replace placeholders with actual field names for each step
+  const surveySteps = [
+    {
+      title: 'General Information',
+      content: <Step1GeneralInformation />,
+      fields: [
+        ['general_information', 'brand_name'],
+        ['general_information', 'brand_description'],
+        ['general_information', 'products_services'],
+        ['general_information', 'location_info'],
+        ['general_information', 'url'],
+        ['general_information', 'categories'],
+        ['general_information', 'niche'],
+      ],
+    },
+    {
+      title: 'Audience',
+      content: <Step2Audience />,
+      fields: [
+        ['audience', 'who_is_your_audience'],
+        ['audience', 'needs_and_preferences'],
+      ],
+    },
+    {
+      title: 'SEO & Keywords',
+      content: <Step3SeoKeywords />,
+      fields: [
+        ['seo', 'seed_keywords'],
+        ['seo', 'pillar_keywords', 'informational_intent'],
+        ['seo', 'pillar_keywords', 'commercial_intent'],
+        ['seo', 'pillar_keywords', 'transactional_intent'],
+        // Ensure all fields from Step3SeoKeywords are listed
+      ],
+    },
+    {
+      title: 'Competitors & Content',
+      content: <Step4CompetitorsContent />,
+      fields: [
+        ['competitors_content', 'key_competitors'],
+        ['competitors_content', 'secondary_competitors'],
+        ['content_pillars'], // Assuming this is a top-level field potentially related to this step
+        ['brand_image_tone'], // Assuming this is a top-level field potentially related
+      ],
+    },
+    {
+      title: 'Goals & Guardrails',
+      content: <Step5Goals />,
+      fields: [
+        ['goals', 'primary_goals'],
+        ['goals', 'current_marketing_activities'],
+        ['guardrails'], // Assuming this is a top-level field
+      ],
+    },
+  ];
 
   const validateAndProceed = async () => {
     try {
-      // Validate only fields visible in the current step.
-      // This is tricky with a single form. AntD's Form.List might be better for dynamic fields.
-      // For now, we'll rely on field-level rules.
-      // A more robust way might be to get all field names for the current step and validate those.
-      // const currentSectionKey = stepsMeta[current].sectionKey;
-      // const fieldsToValidate = Object.keys(form.getFieldsValue()).filter(key => key.startsWith(currentSectionKey));
-      // await form.validateFields(fieldsToValidate); // This needs more precise field names.
-
-      // For simplicity, validate all touched fields or rely on button submit for full validation
-      // For a step-by-step wizard, usually you validate the current step's fields
-      // We'll just proceed and let final submit handle full validation or add specific validation logic here later.
-      setCurrent(current + 1);
+      // Validate only fields for the current step
+      const currentFields = surveySteps[currentStep].fields;
+      await form.validateFields(currentFields);
+      setCurrentStep(currentStep + 1);
     } catch (errorInfo) {
       console.log('Validation Failed:', errorInfo);
+      message.error('Please complete all required fields in the current step.');
     }
   };
 
-  const next = () => {
-    // If we want to validate per step before proceeding:
-    // validateAndProceed();
-    // For now, just increment step. Validation will happen on individual field rules
-    // or on final submit.
-    if (current < stepsMeta.length - 1) {
-        setCurrent(current + 1);
+  const next = async () => {
+    if (currentStep < surveySteps.length - 1) {
+      await validateAndProceed();
+    } else {
+      // This is the last step, prepare for submission
+      try {
+        // Validate all fields one last time before showing confirmation
+        await form.validateFields();
+        const values = form.getFieldsValue(true); // Get all values
+        setSubmittedData(values);
+        setIsSubmissionModalVisible(true);
+      } catch (errorInfo) {
+        console.log('Final Validation Failed:', errorInfo);
+        message.error('Please ensure all survey information is correctly filled out.');
+      }
     }
   };
 
   const prev = () => {
-    if (current > 0) {
-        setCurrent(current - 1);
-    }
+    setCurrentStep(currentStep - 1);
   };
 
   const handleSkip = () => {
-    // alert('Survey Skipped (Placeholder)'); // Old placeholder
-    navigate({ to: '/dashboard' }); // Navigate to dashboard
+    setIsSkipping(true);
+    // Potentially save any partial data if desired, or just navigate
+    message.info('Survey skipped. You can complete it later from your profile settings.');
+    setTimeout(() => {
+      navigate({ to: '/dashboard' }); // Or to another appropriate page
+      setIsSkipping(false);
+    }, 1500);
   };
 
   const handleFinalSubmit = async () => {
-    try {
-      const values = await form.validateFields();
-      // Instead of direct submission, show confirmation modal first
-      setConfirmedSurveyData(values);
-      setIsConfirmationModalVisible(true);
-    } catch (errorInfo) {
-      console.log('Validation Failed before confirmation:', errorInfo);
-      message.error('Please correct the errors before proceeding to confirmation.');
-    }
+    await executeActualSubmission();
   };
 
   const executeActualSubmission = async () => {
-    if (!confirmedSurveyData) return;
-    setIsConfirmationModalVisible(false);
+    if (!submittedData) {
+      message.error('No data to submit.');
+      return;
+    }
     setIsSubmitting(true);
-    console.log('Survey Data to be submitted:', confirmedSurveyData);
     try {
-      // Call the new service function
-      // Ensure confirmedSurveyData matches SurveyDataPayload structure
-      const result = await submitSurvey(confirmedSurveyData as SurveyDataPayload);
+      const ensureHttps = (url: string | undefined): string | undefined => {
+        if (!url || url.trim() === '') return undefined;
+        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+          return `https://${url.trim()}`;
+        }
+        return url.trim();
+      };
 
-      console.log('API Submission Result:', result);
-      message.success(result.message || 'Survey Submitted Successfully!');
-      navigate({ to: '/dashboard' });
-    } catch (error: any) {
-      console.error("Survey submission error in component:", error);
-      message.error(error.message || 'Survey submission failed. Please try again.');
+      const mapToPayload = (data: SurveyData): SurveyDataPayload => {
+        const payload: SurveyDataPayload = {
+          general_information: data.general_information ? {
+            ...data.general_information,
+            url: ensureHttps(data.general_information.url),
+          } : {},
+          audience: data.audience || {},
+          seo: data.seo ? {
+            ...data.seo,
+            // Assuming seed_keywords and pillar_keywords don't contain URLs needing scheme
+          } : {},
+          competitors_content: data.competitors_content ? {
+            ...data.competitors_content,
+            key_competitors: data.competitors_content.key_competitors?.map(ensureHttps).filter(Boolean) as string[] | undefined,
+            secondary_competitors: data.competitors_content.secondary_competitors?.map(ensureHttps).filter(Boolean) as string[] | undefined,
+          } : {},
+          guardrails: data.guardrails || '',
+          content_pillars: data.content_pillars || '',
+          brand_image_tone: data.brand_image_tone || '',
+          goals: data.goals || {},
+        };
+        // Remove undefined fields from payload to keep it clean, Pydantic will use defaults if set
+        // Or, ensure default {} or '' are acceptable by backend if fields are truly optional
+        // For this iteration, we are sending empty objects/strings as per original mapping logic
+        return payload as SurveyDataPayload;
+      };
+
+      const apiPayload = mapToPayload(submittedData);
+
+      await submitSurvey(apiPayload); // Call the service
+      message.success('Survey submitted successfully!');
+      setIsSubmissionModalVisible(false);
+      navigate({ to: '/dashboard' }); // Navigate to dashboard or a success page
+    } catch (error) {
+      console.error('Survey submission error:', error);
+      message.error('Failed to submit survey. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const renderConfirmationContent = (values: SurveyData | null) => {
-    if (!values) return null;
+    if (!values) return <Text>No data to display.</Text>;
 
-    // Helper to render array values or a default message
     const renderArray = (arr: string[] | undefined) => arr && arr.length > 0 ? arr.join(', ') : 'Not provided';
     const renderString = (str: string | undefined) => str && str.length > 0 ? str : 'Not provided';
 
     return (
       <Descriptions bordered column={1} size="small">
-        {values.general_information && (
-          <>
-            <Descriptions.Item label="Brand Name" labelStyle={{ fontWeight: 'bold' }}>
-              {renderString(values.general_information.brand_name)}
-            </Descriptions.Item>
-            <Descriptions.Item label="Brand Description" labelStyle={{ fontWeight: 'bold' }}>
-              {renderString(values.general_information.brand_description)}
-            </Descriptions.Item>
-            <Descriptions.Item label="Primary Products/Services" labelStyle={{ fontWeight: 'bold' }}>
-              {renderString(values.general_information.products_services)}
-            </Descriptions.Item>
-            <Descriptions.Item label="Location Information" labelStyle={{ fontWeight: 'bold' }}>
-              {renderString(values.general_information.location_info)}
-            </Descriptions.Item>
-            <Descriptions.Item label="Website URL" labelStyle={{ fontWeight: 'bold' }}>
-              {values.general_information.url ? `https://${values.general_information.url}` : 'Not provided'}
-            </Descriptions.Item>
-            <Descriptions.Item label="Categories" labelStyle={{ fontWeight: 'bold' }}>
-              {renderArray(values.general_information.categories)}
-            </Descriptions.Item>
-            <Descriptions.Item label="Specific Niche" labelStyle={{ fontWeight: 'bold' }}>
-              {renderString(values.general_information.niche)}
-            </Descriptions.Item>
-          </>
-        )}
+        <Descriptions.Item label="Brand Name">{renderString(values.general_information?.brand_name)}</Descriptions.Item>
+        <Descriptions.Item label="Description">{renderString(values.general_information?.brand_description)}</Descriptions.Item>
+        <Descriptions.Item label="URL">{renderString(values.general_information?.url)}</Descriptions.Item>
+        <Descriptions.Item label="Categories">{renderArray(values.general_information?.categories)}</Descriptions.Item>
+        <Descriptions.Item label="Products/Services">{renderString(values.general_information?.products_services)}</Descriptions.Item>
+        <Descriptions.Item label="Location">{renderString(values.general_information?.location_info)}</Descriptions.Item>
+        <Descriptions.Item label="Niche">{renderString(values.general_information?.niche)}</Descriptions.Item>
 
-        {values.audience && (
-          <>
-            <Descriptions.Item label="Target Audience" labelStyle={{ fontWeight: 'bold' }}>
-              {renderString(values.audience.who_is_your_audience)}
-            </Descriptions.Item>
-            <Descriptions.Item label="Audience Needs/Preferences" labelStyle={{ fontWeight: 'bold' }}>
-              {renderString(values.audience.needs_and_preferences)}
-            </Descriptions.Item>
-          </>
-        )}
+        <Descriptions.Item label="Target Audience">{renderString(values.audience?.who_is_your_audience)}</Descriptions.Item>
+        <Descriptions.Item label="Audience Needs/Preferences">{renderString(values.audience?.needs_and_preferences)}</Descriptions.Item>
 
-        {values.seo && (
-          <>
-            <Descriptions.Item label="Seed Keywords" labelStyle={{ fontWeight: 'bold' }}>
-              {renderArray(values.seo.seed_keywords)}
-            </Descriptions.Item>
-            {values.seo.pillar_keywords && (
-              <>
-                <Descriptions.Item label="Informational Intent Keywords" labelStyle={{ fontWeight: 'bold' }}>
-                  {renderArray(values.seo.pillar_keywords.informational_intent)}
-                </Descriptions.Item>
-                <Descriptions.Item label="Commercial Intent Keywords" labelStyle={{ fontWeight: 'bold' }}>
-                  {renderArray(values.seo.pillar_keywords.commercial_intent)}
-                </Descriptions.Item>
-                <Descriptions.Item label="Transactional Intent Keywords" labelStyle={{ fontWeight: 'bold' }}>
-                  {renderArray(values.seo.pillar_keywords.transactional_intent)}
-                </Descriptions.Item>
-                <Descriptions.Item label="Brand Intent Keywords" labelStyle={{ fontWeight: 'bold' }}>
-                  {renderArray(values.seo.pillar_keywords.brand_intent)}
-                </Descriptions.Item>
-              </>
-            )}
-          </>
-        )}
+        <Descriptions.Item label="Seed Keywords">{renderArray(values.seo?.seed_keywords)}</Descriptions.Item>
+        {/* Add more SEO fields as needed */}
 
-        {values.competitors_content && (
-          <>
-            <Descriptions.Item label="Key Competitors (URLs)" labelStyle={{ fontWeight: 'bold' }}>
-              {renderArray(values.competitors_content.key_competitors)}
-            </Descriptions.Item>
-            <Descriptions.Item label="Secondary Competitors (URLs)" labelStyle={{ fontWeight: 'bold' }}>
-              {renderArray(values.competitors_content.secondary_competitors)}
-            </Descriptions.Item>
-          </>
-        )}
+        <Descriptions.Item label="Key Competitors">{renderArray(values.competitors_content?.key_competitors)}</Descriptions.Item>
+        <Descriptions.Item label="Secondary Competitors">{renderArray(values.competitors_content?.secondary_competitors)}</Descriptions.Item>
 
-        <Descriptions.Item label="Content Guardrails" labelStyle={{ fontWeight: 'bold' }}>
-          {renderString(values.guardrails)}
-        </Descriptions.Item>
-        <Descriptions.Item label="Content Pillars" labelStyle={{ fontWeight: 'bold' }}>
-          {renderString(values.content_pillars)}
-        </Descriptions.Item>
-        <Descriptions.Item label="Brand Image/Tone Guidelines" labelStyle={{ fontWeight: 'bold' }}>
-          {renderString(values.brand_image_tone)}
-        </Descriptions.Item>
+        <Descriptions.Item label="Content Pillars">{renderString(values.content_pillars)}</Descriptions.Item>
+        <Descriptions.Item label="Brand Image/Tone">{renderString(values.brand_image_tone)}</Descriptions.Item>
+        <Descriptions.Item label="Guardrails">{renderString(values.guardrails)}</Descriptions.Item>
 
-        {values.goals && (
-          <Descriptions.Item label="Primary Goals" labelStyle={{ fontWeight: 'bold' }}>
-            {renderArray(values.goals.primary_goals?.map(goalValue =>
-              primaryGoalsList.find(g => g.value === goalValue)?.label || goalValue
-            ))}
-          </Descriptions.Item>
-        )}
-        {values.goals?.current_marketing_activities && (
-          <Descriptions.Item label="Current Marketing Activities" labelStyle={{ fontWeight: 'bold' }}>
-            {renderArray(values.goals.current_marketing_activities.map(activityValue =>
-              commonMarketingActivities.find(a => a.value === activityValue)?.label || activityValue
-            ))}
-          </Descriptions.Item>
-        )}
+        <Descriptions.Item label="Primary Goals">{renderArray(values.goals?.primary_goals)}</Descriptions.Item>
+        <Descriptions.Item label="Current Marketing Activities">{renderArray(values.goals?.current_marketing_activities)}</Descriptions.Item>
       </Descriptions>
     );
   };
 
-  const CurrentStepComponent = stepsMeta[current].content;
 
   return (
-    <Row justify="center" align="middle" style={{ minHeight: '100vh', padding: '20px' }}>
-      <Col xs={24} sm={23} md={22} lg={20} xl={20} xxl={18}>
-        <Card
-          title={<Title level={3} style={{ textAlign: 'center', marginBottom: 0 }}>Tell Us About Your Business</Title>}
-          bordered={false}
-        >
+    <Card title="Business Onboarding Survey" style={{ margin: 'auto', maxWidth: '1000px' }}>
+       <Row justify="center" style={{ marginBottom: 24 }}>
+        <Col xs={24} sm={20} md={18} lg={24} xl={24} xxl={24}> {/* Adjusted Col spans */}
           <Steps
-            current={current}
-            items={stepsMeta.map(item => ({
-              key: item.title,
-              title: <div style={{ whiteSpace: 'normal', overflowWrap: 'break-word' }}>{item.title}</div>,
-              style: { flex: 1, textAlign: 'center' }
-            }))}
-            style={{ marginBottom: '32px', display: 'flex', width: '100%' }}
+            current={currentStep}
+            labelPlacement="vertical"
+            items={surveySteps.map(item => ({ key: item.title, title: item.title }))}
+            className="survey-steps-flex" // Ensure this class is defined for flex behavior
           />
-
-          <Form
-            form={form}
-            layout="vertical"
-            name="surveyForm"
-            // onFinish={handleFinalSubmit} // We'll call this manually from the last step's button
-            initialValues={{ // Set initial values for the form here if necessary
-                // e.g. general_information: { brand_name: "My Test Brand"}
-            }}
-          >
-            <div className="steps-content" style={{ marginTop: '24px', padding: '24px', background: '#f9f9f9', borderRadius: '8px' }}>
-              <CurrentStepComponent />
-            </div>
-
-            <div className="steps-action" style={{ marginTop: '24px', textAlign: 'right' }}>
-              <Space>
-                <Button onClick={handleSkip} style={{ marginRight: 8 }}>
-                  Skip Survey
+        </Col>
+      </Row>
+      <Form form={form} layout="vertical" name="survey_wizard_form">
+        <div style={{ marginTop: 24, marginBottom: 24, padding: '20px', border: '1px solid #f0f0f0', borderRadius: '8px' }}>
+          {surveySteps[currentStep].content}
+        </div>
+        <Row justify="space-between" gutter={16} style={{ marginTop: 24 }}>
+          <Col>
+            {currentStep > 0 && (
+              <Button style={{ margin: '0 8px' }} onClick={prev} disabled={isSubmitting || isSkipping}>
+                Previous
+              </Button>
+            )}
+          </Col>
+          <Col>
+            <Space>
+              <Button onClick={handleSkip} danger disabled={isSubmitting || isSkipping}>
+                {isSkipping ? 'Skipping...' : 'Skip for Now'}
+              </Button>
+              {currentStep < surveySteps.length - 1 ? (
+                <Button type="primary" onClick={next} loading={isSubmitting} disabled={isSkipping}>
+                  Next
                 </Button>
-                {current > 0 && (
-                  <Button style={{ margin: '0 8px' }} onClick={() => prev()}>
-                    Previous
-                  </Button>
-                )}
-                {current < stepsMeta.length - 1 && (
-                  <Button type="primary" onClick={() => next()}>
-                    Next
-                  </Button>
-                )}
-                {current === stepsMeta.length - 1 && (
-                  <Button type="primary" onClick={handleFinalSubmit}>
-                    Submit Survey
-                  </Button>
-                )}
-              </Space>
-            </div>
-          </Form>
-          <Modal
-            title="Confirm Your Survey Submission"
-            open={isConfirmationModalVisible}
-            onOk={executeActualSubmission}
-            onCancel={() => setIsConfirmationModalVisible(false)}
-            width={800} // Adjust width as needed
-            okText={isSubmitting ? "Submitting..." : "Submit"} // Change button text on loading
-            okButtonProps={{ loading: isSubmitting }} // Show loading spinner on button
-            cancelText="Edit"
-          >
-            {renderConfirmationContent(confirmedSurveyData)}
-          </Modal>
-        </Card>
-      </Col>
-    </Row>
+              ) : (
+                <Button type="primary" onClick={next} loading={isSubmitting} disabled={isSkipping}>
+                  Review & Submit
+                </Button>
+              )}
+            </Space>
+          </Col>
+        </Row>
+      </Form>
+      <Modal
+        title="Confirm Submission"
+        open={isSubmissionModalVisible}
+        onOk={handleFinalSubmit}
+        onCancel={() => setIsSubmissionModalVisible(false)}
+        confirmLoading={isSubmitting}
+        width={800}
+        okText="Submit Survey"
+        cancelText="Back to Edit"
+      >
+        <Title level={5} style={{marginBottom: '16px'}}>Please review your survey responses before submitting:</Title>
+        {renderConfirmationContent(submittedData)}
+      </Modal>
+    </Card>
   );
 };
+
+// Add this CSS to your global stylesheet (e.g., index.css or App.css)
+// .survey-steps-flex .ant-steps-item {
+//   flex: 1;
+// }
+// .survey-steps-flex .ant-steps-item-title {
+//   white-space: normal; /* Allow text wrapping */
+//   overflow: visible; /* Ensure wrapped text is visible */
+//   text-overflow: clip; /* Optional: if you still want to clip if it somehow overflows a very small container */
+// }

@@ -1,10 +1,12 @@
 from pydantic import BaseModel, HttpUrl
 from typing import List, Optional
 
+# Mirroring frontend SurveyDataPayload for FastAPI request body validation
+
 class GeneralInformationPayload(BaseModel):
     brand_name: Optional[str] = None
     brand_description: Optional[str] = None
-    url: Optional[str] = None # Frontend sends without scheme, HttpUrl expects scheme
+    url: Optional[HttpUrl] = None # Pydantic will validate this as a URL
     categories: Optional[List[str]] = None
     products_services: Optional[str] = None
     location_info: Optional[str] = None
@@ -25,8 +27,8 @@ class SeoPayload(BaseModel):
     pillar_keywords: Optional[PillarKeywordsPayload] = None
 
 class CompetitorsContentPayload(BaseModel):
-    key_competitors: Optional[List[str]] = None # Frontend sends without scheme
-    secondary_competitors: Optional[List[str]] = None # Frontend sends without scheme
+    key_competitors: Optional[List[HttpUrl]] = None # Assuming these are URLs
+    secondary_competitors: Optional[List[HttpUrl]] = None # Assuming these are URLs
 
 class GoalsPayload(BaseModel):
     primary_goals: Optional[List[str]] = None
@@ -41,6 +43,9 @@ class SurveySubmissionPayload(BaseModel):
     content_pillars: Optional[str] = None
     brand_image_tone: Optional[str] = None
     goals: Optional[GoalsPayload] = None
+
+    class Config:
+        extra = 'ignore' # Allow ignoring extra fields from frontend if any, for robustness
 
 class SurveySubmissionResponse(BaseModel):
     message: str

@@ -1,4 +1,4 @@
-import { Outlet, createRootRoute } from '@tanstack/react-router';
+import { Outlet, createRootRoute, useRouterState } from '@tanstack/react-router';
 import { TanStackRouterDevtools } from '@tanstack/router-devtools';
 import { Layout } from '../components/common/Layout'; // Adjust path as needed
 import { Flex, Loader } from '@aws-amplify/ui-react';
@@ -12,6 +12,8 @@ export const Route = createRootRoute({
 
 function RootComponent() {
   const { isLoading: authIsLoading } = useAuth();
+  const routerState = useRouterState();
+  const isLandingPage = routerState.location.pathname === '/';
 
   // This is a basic loading state; a more sophisticated one might be needed
   // if there are route-level loading states from TanStack Router itself.
@@ -20,6 +22,15 @@ function RootComponent() {
       <Flex justifyContent="center" alignItems="center" minHeight="100vh">
         <Loader size="large" />
       </Flex>
+    );
+  }
+
+  if (isLandingPage) {
+    return (
+      <>
+        <Outlet />
+        {process.env.NODE_ENV === 'development' && <TanStackRouterDevtools />}
+      </>
     );
   }
 

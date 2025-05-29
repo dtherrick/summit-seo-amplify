@@ -70,7 +70,7 @@ export const submitSurvey = async (surveyData: SurveyDataPayload) => {
 
     const response = await post({
       apiName: 'SummitSEOAmplifyAPI', // This must match the API name in amplify_outputs.json and main.tsx
-      path: '/api/v1/onboarding/survey',
+      path: '/onboarding/survey',
       options: {
         headers: {
           Authorization: `Bearer ${idToken}`,
