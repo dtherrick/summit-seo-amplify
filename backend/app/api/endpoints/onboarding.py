@@ -8,7 +8,7 @@ from backend.app.models.user import User # Assuming User model is compatible wit
 from backend.app.models.survey import SurveySubmissionPayload, SurveySubmissionResponse
 # from backend.app.services.onboarding_service import OnboardingService # To be created
 from backend.app.core.config import settings # If needed for things like table names
-from backend.app.db.dynamodb import get_dynamodb_table # Assuming this utility exists
+from backend.app.db.dynamodb import tenants_table # Import tenants_table directly
 from botocore.exceptions import ClientError
 
 router = APIRouter()
@@ -47,11 +47,9 @@ async def submit_onboarding_survey(
         )
 
     try:
-        tenants_table = get_dynamodb_table(settings.TENANTS_TABLE_NAME)
-
-        # Using .model_dump() for Pydantic v2, or .dict() for Pydantic v1
-        # Assuming Pydantic v1 based on .json() later. If v2, use model_dump(exclude_none=True)
-        survey_data_dict = payload.dict(exclude_none=True)
+        # tenants_table is now imported directly
+        # survey_data_dict = payload.dict(exclude_none=True) # Pydantic v1
+        survey_data_dict = payload.model_dump(exclude_none=True) # Pydantic v2
 
         tenants_table.update_item(
             Key={'id': tenant_id},

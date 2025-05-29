@@ -109,6 +109,12 @@
   - Enabled text wrapping for step titles to prevent truncation of longer headers like 'Competitors & Content'.
 - Next steps: Complete implementation of survey steps in `SurveyWizard.tsx`, including form validation and state management.
 
+### Day 5.1: Python Test Error Resolution (Current)
+- Resolved `ImportError: cannot import name 'get_dynamodb_table' from 'backend.app.db.dynamodb'` in Python tests.
+- The error occurred because `backend/app/api/endpoints/onboarding.py` was trying to import a non-existent function `get_dynamodb_table`.
+- Modified `backend/app/api/endpoints/onboarding.py` to directly import and use the existing `tenants_table` object from `backend.app/db/dynamodb.py`.
+- Updated Pydantic V1 `.dict()` to V2 `.model_dump()` in `backend/app/api/endpoints/onboarding.py` for survey data serialization.
+
 ## Notes
 
 ### Progress on Day 2 (Current)
