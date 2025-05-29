@@ -122,6 +122,12 @@
 - This was caused by a trailing slash in the `endpoint` definition for `SummitSEOAmplifyAPI` in `amplify_outputs.json` combined with a leading slash in the `path` specified in `frontend/src/services/onboardingService.ts`.
 - Resolved by removing the trailing slash from the `endpoint` in `amplify_outputs.json`.
 
+### Day 5.3: Lambda Import Error Resolution (Current)
+- Investigated `Runtime.ImportModuleError: Unable to import module 'app.main': No module named 'backend'` in Lambda logs.
+- The error was caused by absolute imports (e.g., `from backend.app...`) in `backend/app/api/endpoints/onboarding.py`.
+- Other modules within the `app` directory were using relative imports.
+- Changed the imports in `backend/app/api/endpoints/onboarding.py` to be relative (e.g., `from ...utils.security...`) to align with the project structure and Lambda's Python path expectations.
+
 ## Notes
 
 ### Progress on Day 2 (Current)

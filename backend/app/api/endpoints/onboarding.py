@@ -3,12 +3,12 @@ from starlette import status
 from datetime import datetime, timezone
 from typing import Dict, Any
 
-from backend.app.utils.security import get_current_user
-from backend.app.models.user import User # Assuming User model is compatible with get_current_user output
-from backend.app.models.survey import SurveySubmissionPayload, SurveySubmissionResponse
+from ...utils.security import get_current_user
+from ...models.user import User # Assuming User model is compatible with get_current_user output
+from ...models.survey import SurveySubmissionPayload, SurveySubmissionResponse
 # from backend.app.services.onboarding_service import OnboardingService # To be created
-from backend.app.core.config import settings # If needed for things like table names
-from backend.app.db.dynamodb import tenants_table # Import tenants_table directly
+from ...core.config import settings # If needed for things like table names
+from ...db.dynamodb import tenants_table # Import tenants_table directly
 from botocore.exceptions import ClientError
 
 router = APIRouter()
