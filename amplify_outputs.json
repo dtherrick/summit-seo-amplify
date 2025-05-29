@@ -29,7 +29,7 @@
       "awsAPIPlugin": {
         "SummitSEOAmplifyAPI": {
           "endpointType": "HTTP",
-          "endpoint": "https://qi9k0zm7z8.execute-api.us-east-1.amazonaws.com/api/v1/",
+          "endpoint": "https://qi9k0zm7z8.execute-api.us-east-1.amazonaws.com/api/v1",
           "region": "us-east-1",
           "authorizationType": "AMAZON_COGNITO_USER_POOLS"
         }

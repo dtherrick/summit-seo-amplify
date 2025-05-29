@@ -115,6 +115,13 @@
 - Modified `backend/app/api/endpoints/onboarding.py` to directly import and use the existing `tenants_table` object from `backend.app/db/dynamodb.py`.
 - Updated Pydantic V1 `.dict()` to V2 `.model_dump()` in `backend/app/api/endpoints/onboarding.py` for survey data serialization.
 
+### Day 5.2: Frontend Survey Submission Errors (Current)
+- Investigated CORS errors and 500 Internal Server Error when submitting the onboarding survey from the frontend.
+- The initial CORS preflight errors from `http://127.0.0.1:5173` to `https://qi9k0zm7z8.execute-api.us-east-1.amazonaws.com` were addressed by the user by adjusting API Gateway CORS settings.
+- The subsequent 500 Internal Server Error was traced to a double slash (`//`) in the constructed API request URL: `https://qi9k0zm7z8.execute-api.us-east-1.amazonaws.com/api/v1//onboarding/survey`.
+- This was caused by a trailing slash in the `endpoint` definition for `SummitSEOAmplifyAPI` in `amplify_outputs.json` combined with a leading slash in the `path` specified in `frontend/src/services/onboardingService.ts`.
+- Resolved by removing the trailing slash from the `endpoint` in `amplify_outputs.json`.
+
 ## Notes
 
 ### Progress on Day 2 (Current)
