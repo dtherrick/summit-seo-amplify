@@ -23,7 +23,7 @@ interface AuthContextType {
   handleConfirmSignUp: (input: { username: string; confirmationCode: string }) => Promise<void>;
   handleResendSignUpCode: (input: { username: string }) => Promise<void>;
   handleForgotPassword: (input: { username: string }) => Promise<void>;
-  handleConfirmForgotPassword: (input: { username: string; newPassword: string; confirmationCode?: string }) => Promise<void>;
+  handleConfirmForgotPassword: (input: { username: string; newPassword: string; confirmationCode: string }) => Promise<void>;
   // TODO: Add types for other auth functions if needed (e.g., federated sign-in)
 }
 
@@ -135,7 +135,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
- const handleConfirmForgotPassword = async (input: { username: string; newPassword: string; confirmationCode?: string }) => {
+ const handleConfirmForgotPassword = async (input: { username: string; newPassword: string; confirmationCode: string }) => {
     setIsLoading(true);
     setError(null);
     try {
