@@ -525,6 +525,8 @@ const Step5Goals: React.FC<StepProps> = () => {
 //   <div>Step 5: Final Details Content (To be implemented) <Button onClick={props.prev}>Prev</Button> <Button type="primary" onClick={() => alert('Survey Submitted (Placeholder)')}>Submit</Button></div>
 // );
 
+// Commenting out unused stepsMeta variable
+/*
 const stepsMeta: { title: string; content: React.FC<StepProps>; sectionKey: string; }[] = [
   {
     title: 'General Information',
@@ -552,6 +554,7 @@ const stepsMeta: { title: string; content: React.FC<StepProps>; sectionKey: stri
     sectionKey: 'goals',
   },
 ];
+*/
 
 export const SurveyWizard: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(0);
