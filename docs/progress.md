@@ -128,6 +128,14 @@
 - Other modules within the `app` directory were using relative imports.
 - Changed the imports in `backend/app/api/endpoints/onboarding.py` to be relative (e.g., `from ...utils.security...`) to align with the project structure and Lambda's Python path expectations.
 
+### Day 5.4: 403 Forbidden Error on Survey Submission (Current)
+- After resolving Lambda import errors, survey submission now results in a 403 Forbidden error from the API (`POST /api/v1/onboarding/survey`).
+- Browser console logs confirm the 403 status code.
+- Identified potential causes within `backend/app/api/endpoints/onboarding.py`:
+  - The endpoint explicitly raises a 403 if `tenant_id` or `user_id` is not found in the `current_user` object (derived from the JWT).
+- This is likely related to previous issues where `tenant_id` was missing from user data.
+- Next step is to inspect detailed CloudWatch logs for the Lambda function during a survey submission attempt to see if these specific 403s are being triggered and logged.
+
 ## Notes
 
 ### Progress on Day 2 (Current)

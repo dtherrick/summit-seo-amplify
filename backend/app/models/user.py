@@ -22,7 +22,7 @@ class UserCreate(UserBase):
 
 class UserInDB(UserBase):
     """User model as stored in the database."""
-    id: str
+    user_id: str
     tenant_id: Optional[str] = None
     cognito_id: str
     created_at: datetime

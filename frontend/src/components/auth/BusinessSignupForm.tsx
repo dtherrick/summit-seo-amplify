@@ -20,8 +20,8 @@ export const BusinessSignupForm: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  // Add other business-related fields if needed, e.g., businessName
-  // const [businessName, setBusinessName] = useState('');
+  const [businessName, setBusinessName] = useState('');
+  const [businessWebsite, setBusinessWebsite] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -31,32 +31,32 @@ export const BusinessSignupForm: React.FC = () => {
       setFormError('Passwords do not match.');
       return;
     }
-    if (!email || !password) {
-      setFormError('Email and password are required.');
+    if (!email || !password || !businessName || !businessWebsite) {
+      setFormError('Email, password, business name, and business website are required.');
       return;
     }
 
+    const newTenantId = crypto.randomUUID();
+
     const signUpInput: SignUpInput = {
-      username: email, // Cognito uses username, which will be the email
+      username: email,
       password: password,
       options: {
         userAttributes: {
-          email: email, // Standard attribute
-          // Add custom attributes here, prefixed with 'custom:'
-          // e.g., 'custom:business_name': businessName,
+          email: email,
+          'custom:tenant_id': newTenantId,
+          'custom:business_name': businessName,
+          'custom:business_website': businessWebsite,
         },
-        // autoSignIn: true // Optional: attempt to sign in user after successful sign up
       },
     };
 
     try {
       const result = await handleSignUp(signUpInput);
-      // If sign up requires confirmation, navigate to a confirmation page
       if (result.nextStep.signUpStep === 'CONFIRM_SIGN_UP') {
         navigate({ to: '/confirm-signup', search: { username: email } });
       } else {
-        // If autoSignIn is enabled and successful, or if no confirmation needed
-        navigate({ to: '/dashboard' }); // Or to onboarding if that's the next step
+        navigate({ to: '/dashboard' });
       }
     } catch (err) {
       if (err instanceof Error) {
@@ -76,6 +76,24 @@ export const BusinessSignupForm: React.FC = () => {
         <form onSubmit={onSubmit}>
           <Flex direction="column" gap="medium">
             <TextField
+              label="Business Name"
+              name="businessName"
+              value={businessName}
+              onChange={(e) => setBusinessName(e.target.value)}
+              isRequired
+              disabled={isLoading}
+            />
+            <TextField
+              label="Business Website URL"
+              name="businessWebsite"
+              type="url"
+              value={businessWebsite}
+              onChange={(e) => setBusinessWebsite(e.target.value)}
+              placeholder="https://example.com"
+              isRequired
+              disabled={isLoading}
+            />
+            <TextField
               label="Email"
               name="email"
               type="email"
@@ -90,9 +108,7 @@ export const BusinessSignupForm: React.FC = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               isRequired
-              hasShowPasswordToggle
               disabled={isLoading}
-              // Consider adding password strength indicator or policy display
             />
             <PasswordField
               label="Confirm Password"
@@ -100,19 +116,8 @@ export const BusinessSignupForm: React.FC = () => {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               isRequired
-              hasShowPasswordToggle
               disabled={isLoading}
             />
-            {/* Example for a custom attribute (uncomment and adjust if needed)
-            <TextField
-              label="Business Name"
-              name="businessName"
-              value={businessName}
-              onChange={(e) => setBusinessName(e.target.value)}
-              // isRequired if applicable
-              disabled={isLoading}
-            />
-            */}
             {(formError || authError) && (
               <Alert variation="error" isDismissible={true} onDismiss={() => setFormError(null)}>
                 {formError || authError?.message}
