@@ -17,17 +17,14 @@ async def read_users_me(current_user: dict = Depends(get_current_user)) -> Any:
     if not user_data_from_db:
         raise HTTPException(status_code=404, detail="User not found")
 
-    # Transform to match the User model
-    transformed_user_data = user_data_from_db.copy()
-    if 'user_id' in transformed_user_data:
-        transformed_user_data['id'] = transformed_user_data.pop('user_id')
+    # The data from get_user_by_cognito_id should already conform to UserInDB (which has user_id)
+    # No transformation needed if get_user_by_cognito_id returns the correct structure.
+    # Remove erroneous transformation:
+    # transformed_user_data = user_data_from_db.copy()
+    # if 'user_id' in transformed_user_data:
+    #     transformed_user_data['id'] = transformed_user_data.pop('user_id')
 
-    # Ensure tenant_id is present or handle its absence.
-    # For now, if it's missing, validation will still fail as the model requires it.
-    # This needs to be investigated based on how tenant_id is populated.
-    # Consider logging a warning if tenant_id is missing, as shown in thought process.
-
-    return transformed_user_data
+    return user_data_from_db
 
 @router.put("/me", response_model=User)
 async def update_users_me(
@@ -37,12 +34,15 @@ async def update_users_me(
     """
     Update current user profile in DynamoDB.
     """
-    user = await get_user_by_cognito_id(current_user["cognito_id"])
-    if not user:
+    user_data_from_db = await get_user_by_cognito_id(current_user["cognito_id"])
+    if not user_data_from_db:
         raise HTTPException(status_code=404, detail="User not found")
-    # Update fields
+
     update_data = user_in.model_dump(exclude_unset=True)
+
     if not update_data:
-        return user  # No changes
-    updated_user = await update_user(user["id"], update_data)
+        return user_data_from_db  # No changes, return data that should match User model
+
+    # Assuming user_data_from_db contains 'user_id' as the primary key
+    updated_user = await update_user(user_data_from_db["user_id"], update_data)
     return updated_user
