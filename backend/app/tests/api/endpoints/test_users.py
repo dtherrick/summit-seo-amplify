@@ -11,7 +11,7 @@ from backend.app.api.endpoints import users as users_endpoint
 client = TestClient(app)
 
 MOCK_USER = {
-    "id": "user-123",
+    "user_id": "user-123",
     "cognito_id": "cognito-abc",
     "email": "testuser@example.com",
     "full_name": "John Doe",
@@ -44,7 +44,7 @@ def test_read_users_me_success(patch_users_table, override_get_current_user):
     response = client.get("/api/v1/users/me")
     assert response.status_code == 200
     data = response.json()
-    assert data["id"] == MOCK_USER["id"]
+    assert data["user_id"] == MOCK_USER["user_id"]
     assert data["email"] == MOCK_USER["email"]
 
 def test_read_users_me_not_found(patch_users_table, override_get_current_user):
@@ -61,14 +61,14 @@ def test_update_users_me_partial_update(patch_users_table, override_get_current_
     assert response.status_code == 200
     data = response.json()
     assert data["full_name"] == "Jane Doe"
-    assert data["id"] == MOCK_USER["id"]
+    assert data["user_id"] == MOCK_USER["user_id"]
 
 def test_update_users_me_noop(patch_users_table, override_get_current_user):
     patch_users_table.query.return_value = {"Items": [MOCK_USER.copy()]}
     response = client.put("/api/v1/users/me", json={})
     assert response.status_code == 200
     data = response.json()
-    assert data["id"] == MOCK_USER["id"]
+    assert data["user_id"] == MOCK_USER["user_id"]
 
 def test_update_users_me_not_found(patch_users_table, override_get_current_user):
     patch_users_table.query.return_value = {"Items": []}
