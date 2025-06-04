@@ -1,5 +1,15 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { getCurrentUser, signInWithRedirect, signOut as amplifySignOut, fetchAuthSession, SignUpInput, signIn, confirmSignUp, resendSignUpCode, resetPassword, confirmResetPassword } from 'aws-amplify/auth';
+import {
+  getCurrentUser,
+  signOut as amplifySignOut,
+  type SignUpInput,
+  signIn,
+  confirmSignUp,
+  resendSignUpCode,
+  resetPassword,
+  confirmResetPassword,
+  signUp as amplifySignUp
+} from 'aws-amplify/auth';
 import type { AuthUser, SignUpOutput, SignInOutput } from 'aws-amplify/auth';
 
 interface AuthContextType {
@@ -13,7 +23,7 @@ interface AuthContextType {
   handleConfirmSignUp: (input: { username: string; confirmationCode: string }) => Promise<void>;
   handleResendSignUpCode: (input: { username: string }) => Promise<void>;
   handleForgotPassword: (input: { username: string }) => Promise<void>;
-  handleConfirmForgotPassword: (input: { username: string; newPassword?: string; confirmationCode?: string }) => Promise<void>;
+  handleConfirmForgotPassword: (input: { username: string; newPassword: string; confirmationCode?: string }) => Promise<void>;
   // TODO: Add types for other auth functions if needed (e.g., federated sign-in)
 }
 
@@ -76,7 +86,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setIsLoading(true);
     setError(null);
     try {
-      const result = await signUp(input);
+      const result = await amplifySignUp(input);
       return result;
     } catch (err: any) {
       setError(err);
@@ -125,11 +135,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
- const handleConfirmForgotPassword = async (input: { username: string; newPassword?: string; confirmationCode?: string }) => {
+ const handleConfirmForgotPassword = async (input: { username: string; newPassword: string; confirmationCode?: string }) => {
     setIsLoading(true);
     setError(null);
     try {
-      await confirmResetPassword(input);
+      await confirmResetPassword({
+        username: input.username,
+        newPassword: input.newPassword,
+        confirmationCode: input.confirmationCode
+      });
     } catch (err: any) {
       setError(err);
       throw err;

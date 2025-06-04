@@ -3,7 +3,7 @@ import { createFileRoute, redirect, Outlet } from '@tanstack/react-router';
 import { ProtectedRoute } from '../components/auth/ProtectedRoute'; // Adjust path as needed
 
 export const Route = createFileRoute('/onboarding')({
-  beforeLoad: ({ context, location }) => {
+  beforeLoad: ({ location }) => {
     // Assuming context.auth.isAuthenticated or similar exists for checking auth
     // If not authenticated, ProtectedRoute might handle it, or redirect here
     // For now, focusing on redirecting to the survey if on /onboarding

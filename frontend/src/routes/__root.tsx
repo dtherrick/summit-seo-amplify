@@ -29,7 +29,7 @@ function RootComponent() {
     return (
       <>
         <Outlet />
-        {process.env.NODE_ENV === 'development' && <TanStackRouterDevtools />}
+        {import.meta.env.DEV && <TanStackRouterDevtools />}
       </>
     );
   }
@@ -38,7 +38,7 @@ function RootComponent() {
     <Layout>
       <Outlet />
       {/* Conditionally render Devtools, e.g., only in development */}
-      {process.env.NODE_ENV === 'development' && <TanStackRouterDevtools />}
+      {import.meta.env.DEV && <TanStackRouterDevtools />}
     </Layout>
   );
 }

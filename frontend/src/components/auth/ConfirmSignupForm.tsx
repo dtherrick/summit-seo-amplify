@@ -42,7 +42,7 @@ export const ConfirmSignupForm: React.FC = () => {
     try {
       await handleConfirmSignUp({ username, confirmationCode });
       // On successful confirmation, redirect to login or auto-sign-in if configured
-      navigate({ to: '/login', search: { confirmed: true } });
+      navigate({ to: '/login' });
     } catch (err) {
       if (err instanceof Error) {
         setFormError(err.message || 'Confirmation failed. Please check the code and try again.');

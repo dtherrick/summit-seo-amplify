@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { Steps, Button, Card, Form, Input, Row, Col, Typography, Space, Select, Checkbox, Modal, Descriptions, message } from 'antd';
+import { Steps, Button, Card, Form, Input, Row, Col, Typography, Space, Select, Modal, Descriptions, message } from 'antd';
 import { useNavigate } from '@tanstack/react-router';
 import { submitSurvey, type SurveyDataPayload } from '../../services/onboardingService'; // Import the service
 
 const { Title, Text } = Typography;
-const { Option } = Select;
 
 // Define interfaces for Survey Data
 interface SurveyData {
